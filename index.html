@@ -959,6 +959,67 @@ function deleteChar(char) {
 }
 
 
+/* ── GOOGLE SHEETS SYNC ── */
+function saveScriptUrl() {
+  const inp = document.getElementById('sync-url-inp');
+  if (!inp) return;
+  const url = inp.value.trim();
+  localStorage.setItem('er_script_url', url);
+  setStatus('Script URL saved ✓', 'ok');
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sync-status ' + (cls || '');
+  if (cls === 'ok') setTimeout(function() { el.textContent = ''; el.className = 'sync-status'; }, 4000);
+}
+
+async function pushToSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved — add one first.', 'err'); return; }
+  setStatus('Pushing…');
+  try {
+    await fetch(url, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: 'push', payload: buildSyncPayload() })
+    });
+    setStatus('Pushed to Google Sheets ✓', 'ok');
+  } catch(e) { setStatus('Push failed: ' + e.message, 'err'); }
+}
+
+async function pullFromSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved.', 'err'); return; }
+  setStatus('Pulling…');
+  try {
+    const res = await fetch(url + '?action=pull&char=' + encodeURIComponent(currentChar) + '&journey=' + encodeURIComponent(currentJourney));
+    const data = await res.json();
+    if (data.state) {
+      state = data.state;
+      saveState();
+      renderAll();
+      setStatus('Pulled from Google Sheets ✓', 'ok');
+    } else { setStatus('No data found for this character/journey.', 'err'); }
+  } catch(e) { setStatus('Pull failed: ' + e.message, 'err'); }
+}
+
+async function syncSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved.', 'err'); return; }
+  setStatus('Syncing…');
+  try {
+    await fetch(url, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: 'sync', payload: buildSyncPayload() })
+    });
+    setStatus('Synced ✓', 'ok');
+  } catch(e) { setStatus('Sync failed: ' + e.message, 'err'); }
+}
+
 function exportJSON() {
   const blob = new Blob([JSON.stringify({character:currentChar,journey:currentJourney,state},null,2)],{type:'application/json'});
   const a = document.createElement('a');
