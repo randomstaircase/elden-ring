@@ -31,6 +31,33 @@
   --border:rgba(184,40,24,0.15);--border2:rgba(184,40,24,0.08);
   --felled:#1e4a2e;--felled-text:#5ab870;
 }
+.t-l-stars {
+  --bg0:#eef1f8;--bg1:#e4e8f4;--bg2:#d8dff0;--bg3:#ccd4ec;--bg4:#bec8e4;
+  --acc:#2a42a8;--acc2:#7040c0;--acc3:#4858c0;
+  --text:#1a2448;--text2:#4858a0;--text3:#7080c0;
+  --border:rgba(42,66,168,0.18);--border2:rgba(42,66,168,0.1);
+  --felled:#1a5030;--felled-text:#1a6838;--felled-border:rgba(26,104,56,0.3);
+  --sote-acc:#c83020;--sote-border:rgba(200,48,32,0.25);
+  --sote-bg:#f8eeec;--sote-text:#8a2818;--sote-text2:#b84030;
+}
+.t-l-elden {
+  --bg0:#f5f0e2;--bg1:#ede5cc;--bg2:#e4d8b8;--bg3:#d8c898;--bg4:#c8b478;
+  --acc:#7a5a10;--acc2:#4a8818;--acc3:#9a7820;
+  --text:#3a2808;--text2:#7a5a20;--text3:#a88040;
+  --border:rgba(122,90,16,0.2);--border2:rgba(122,90,16,0.12);
+  --felled:#1a4818;--felled-text:#206818;--felled-border:rgba(32,104,24,0.3);
+  --sote-acc:#c83020;--sote-border:rgba(200,48,32,0.25);
+  --sote-bg:#f8ede8;--sote-text:#8a2818;--sote-text2:#b84030;
+}
+.t-l-sote {
+  --bg0:#f0ece6;--bg1:#e8dfd6;--bg2:#dfd4c8;--bg3:#d4c4b4;--bg4:#c8b0a0;
+  --acc:#a82010;--acc2:#c07028;--acc3:#904018;
+  --text:#3a1808;--text2:#8a4028;--text3:#b07050;
+  --border:rgba(168,32,16,0.18);--border2:rgba(168,32,16,0.1);
+  --felled:#1a4818;--felled-text:#206818;--felled-border:rgba(32,104,24,0.3);
+  --sote-acc:#a82010;--sote-border:rgba(168,32,16,0.3);
+  --sote-bg:#f8ebe6;--sote-text:#6a1808;--sote-text2:#a03020;
+}
 
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
@@ -61,7 +88,7 @@ body{
     radial-gradient(1px 1px at 72% 85%,rgba(196,168,248,.14) 0%,transparent 100%),
     radial-gradient(1px 1px at 22% 91%,rgba(154,176,224,.16) 0%,transparent 100%);
 }
-.t-elden #stars,.t-sote #stars{display:none;}
+.t-elden #stars,.t-sote #stars,.t-l-stars #stars,.t-l-elden #stars,.t-l-sote #stars{display:none;}
 
 /* ── TOPBAR (sticky) ── */
 #topbar{
@@ -85,7 +112,7 @@ body{
   color:var(--acc2);margin-left:5px;letter-spacing:.06em;opacity:.75;vertical-align:middle;
 }
 .tb-gap{flex:1;}
-.tb-gap-mobile{display:none;}
+
 
 /* Theme toggle */
 .theme-tog{
@@ -163,6 +190,108 @@ body{
 .tab-pane{display:none;padding-top:18px;padding-bottom:60px;}
 .tab-pane.on{display:block;}
 
+
+/* ── SETTINGS PANEL ── */
+#settings-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;
+  display:none;align-items:flex-start;justify-content:flex-end;
+  padding-top:58px;padding-right:14px;
+}
+#settings-overlay.open{display:flex;}
+#settings-panel{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;width:340px;max-width:94vw;
+  max-height:82vh;overflow-y:auto;
+  box-shadow:0 8px 40px rgba(0,0,0,.5);
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.sp-section{padding:16px 18px;border-bottom:1px solid var(--border2);}
+.sp-section:last-child{border-bottom:none;}
+.sp-title{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;
+  color:var(--text2);margin-bottom:12px;
+}
+/* theme grid */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.tg-btn{
+  padding:8px 6px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg3);cursor:pointer;text-align:center;transition:all .15s;
+}
+.tg-btn:hover{border-color:var(--acc);}
+.tg-btn.on{border-color:var(--acc);background:rgba(154,176,224,.12);}
+.tg-swatch{width:28px;height:28px;border-radius:50%;margin:0 auto 5px;border:2px solid rgba(255,255,255,.1);}
+.tg-name{font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.06em;color:var(--text2);display:block;}
+/* playthrough management */
+.pt-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.pt-item{
+  display:flex;align-items:center;gap:7px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:7px;padding:7px 10px;
+}
+.pt-item.active-pt{border-color:var(--acc);}
+.pt-item-name{flex:1;font-size:12px;color:var(--text);}
+.pt-item-journey{font-size:10px;color:var(--text2);font-style:italic;margin-right:4px;}
+.pt-icon-btn{
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text2);font-size:13px;padding:2px 4px;
+  border-radius:4px;transition:all .12s;line-height:1;
+}
+.pt-icon-btn:hover{color:var(--text);background:var(--bg4);}
+.pt-icon-btn.del:hover{color:#e05050;}
+.sp-add-btn{
+  width:100%;padding:7px;border-radius:7px;
+  border:1px dashed var(--border);background:transparent;
+  color:var(--text2);font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;
+  cursor:pointer;transition:all .15s;
+}
+.sp-add-btn:hover{border-color:var(--acc);color:var(--acc);}
+/* sync */
+.sync-url-wrap{display:flex;gap:6px;margin-bottom:8px;}
+.sync-url-inp{
+  flex:1;background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-family:'Crimson Pro',serif;font-size:12px;
+  padding:7px 10px;border-radius:7px;outline:none;
+}
+.sync-url-inp:focus{border-color:var(--acc);}
+.sync-url-inp::placeholder{color:var(--text3);font-style:italic;}
+.sync-btn{
+  padding:7px 12px;border-radius:7px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--acc);
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.sync-btn:hover{background:var(--acc);color:var(--bg0);}
+.sync-btn.danger{color:var(--sote-acc);border-color:var(--sote-border);}
+.sync-btn.danger:hover{background:var(--sote-acc);color:#fff;}
+.sync-status{font-size:11px;color:var(--text2);font-style:italic;min-height:18px;}
+.sync-status.ok{color:var(--felled-text);}
+.sync-status.err{color:#e05050;}
+.sp-hint{font-size:10.5px;color:var(--text2);line-height:1.5;font-style:italic;margin-bottom:8px;}
+/* export */
+.sp-row{display:flex;gap:6px;flex-wrap:wrap;}
+.sp-btn{
+  flex:1;padding:8px 10px;border-radius:7px;
+  border:1px solid var(--border);background:var(--bg3);
+  color:var(--acc);font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;
+  cursor:pointer;transition:all .15s;white-space:nowrap;text-align:center;
+}
+.sp-btn:hover{background:var(--acc);color:var(--bg0);}
+/* settings gear btn */
+.gear-btn{
+  background:transparent;border:1px solid var(--border);
+  color:var(--text2);font-size:16px;
+  width:32px;height:32px;border-radius:7px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.gear-btn:hover{color:var(--acc);border-color:var(--acc);}
+/* inline rename input */
+.pt-rename-inp{
+  flex:1;background:var(--bg2);border:1px solid var(--acc);
+  color:var(--text);font-family:'Crimson Pro',serif;font-size:12px;
+  padding:2px 7px;border-radius:5px;outline:none;
+}
+
 /* ── MODAL ── */
 #modal-wrap{
   position:fixed;inset:0;background:rgba(0,0,0,.75);
@@ -219,19 +348,19 @@ body{
 .sc.acc-death::before{background:#7a2020;}
 .sc.acc-spell::before{background:var(--acc2);}
 .sc-lbl{
-  font-family:'Cinzel',serif;font-size:7px;letter-spacing:.18em;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.16em;
   color:var(--text2);margin-bottom:4px;
 }
 .sc-num{
-  font-family:'Cinzel',serif;font-size:21px;font-weight:700;
+  font-family:'Cinzel',serif;font-size:24px;font-weight:700;
   color:var(--acc);line-height:1;
 }
 .sc.acc-sote .sc-num{color:var(--sote-acc);}
 .sc.acc-death .sc-num{color:#d07070;}
 .sc.acc-spell .sc-num{color:var(--acc2);}
 .sc-line{display:flex;gap:6px;align-items:baseline;margin-top:3px;}
-.sc-ll{font-size:9.5px;color:var(--text2);font-style:italic;min-width:52px;}
-.sc-lv{font-size:11.5px;color:var(--text);}
+.sc-ll{font-size:11px;color:var(--text2);font-style:italic;min-width:56px;}
+.sc-lv{font-size:13px;color:var(--text);}
 .sc-lv.g{color:var(--felled-text);}
 .sc-lv.r{color:#d07070;}
 .prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:8px;overflow:hidden;}
@@ -250,8 +379,8 @@ body{
 .ldr-row{display:flex;align-items:center;gap:8px;padding:5px 12px;border-bottom:1px solid var(--border2);}
 .ldr-row:last-child{border-bottom:none;}
 .ldr-n{font-size:9px;font-family:'Cinzel',serif;color:var(--text2);width:14px;flex-shrink:0;}
-.ldr-name{flex:1;font-size:11.5px;color:var(--text);line-height:1.2;}
-.ldr-d{font-family:'Cinzel',serif;font-size:13px;color:#d07070;flex-shrink:0;}
+.ldr-name{flex:1;font-size:13px;color:var(--text);line-height:1.2;}
+.ldr-d{font-family:'Cinzel',serif;font-size:15px;color:#d07070;flex-shrink:0;}
 .ldr-bar{height:2px;background:var(--bg4);border-radius:1px;margin-top:1px;}
 .ldr-bar-f{height:100%;background:#6a1818;border-radius:1px;}
 .ldr-empty{padding:10px 12px;font-size:11px;color:var(--text3);font-style:italic;}
@@ -388,7 +517,6 @@ body{
   #topbar{padding:0 12px;gap:7px;}
   .logo{font-size:11px;letter-spacing:.1em;}
   .logo em{display:none;}
-  .t-btn{padding:3px 7px;font-size:10px;}
   .sel{font-size:11px;padding:3px 6px;max-width:110px;}
   .icon-btn{padding:4px 7px;font-size:7.5px;}
   .csv-btn{padding:4px 8px;font-size:7.5px;}
@@ -398,8 +526,6 @@ body{
 @media(max-width:600px){
   #topbar{padding:0 8px;gap:4px;}
   .logo{font-size:10px;letter-spacing:.06em;}
-  .theme-tog{padding:2px;gap:1px;}
-  .t-btn{padding:2px 5px;font-size:9px;}
   .pt-wrap{gap:3px;}
   .sel{font-size:10px;padding:2px 4px;max-width:82px;}
   .icon-btn{padding:3px 5px;font-size:7px;}
@@ -413,8 +539,6 @@ body{
   .logo em{display:none;}
   .tb-gap{flex:1;order:2;}
   .csv-btn{order:3;flex-shrink:0;padding:4px 8px;font-size:7.5px;}
-  .theme-tog{order:4;flex:1;min-width:0;border-radius:14px;padding:2px;gap:1px;}
-  .t-btn{flex:1;text-align:center;padding:4px 3px;font-size:9px;letter-spacing:.01em;}
   .pt-wrap{order:5;flex-shrink:0;gap:4px;}
   .sel{font-size:11px;padding:3px 5px;max-width:90px;}
   .icon-btn{padding:3px 5px;font-size:7px;}
@@ -442,24 +566,64 @@ body{
 <div id="topbar">
   <div class="logo">ELDEN RING<em>TRACKER</em></div>
   <div class="tb-gap"></div>
-  <div class="tb-gap-mobile"></div>
-
-  <!-- Theme -->
-  <div class="theme-tog">
-    <button class="t-btn on" data-t="stars" onclick="setTheme('stars',this)">Age of Stars</button>
-    <button class="t-btn" data-t="elden" onclick="setTheme('elden',this)">Elden Ring</button>
-    <button class="t-btn" data-t="sote" onclick="setTheme('sote',this)">Shadow</button>
-  </div>
 
   <!-- Character + Journey -->
   <div class="pt-wrap">
     <select class="sel" id="char-sel" onchange="onCharChange(this.value)"></select>
-    <button class="icon-btn dim" onclick="openNewChar()" title="New character">+</button>
     <div class="pt-sep">/</div>
     <select class="sel" id="journey-sel" onchange="onJourneyChange(this.value)"></select>
   </div>
 
-  <button class="csv-btn" onclick="exportCSV()">&#8659; CSV</button>
+  <!-- Settings gear -->
+  <button class="gear-btn" onclick="toggleSettings()" title="Settings">&#9881;</button>
+</div>
+
+
+<!-- SETTINGS PANEL -->
+<div id="settings-overlay" onclick="closeSettingsOutside(event)">
+  <div id="settings-panel">
+
+    <!-- THEMES -->
+    <div class="sp-section">
+      <div class="sp-title">THEME</div>
+      <div class="theme-grid" id="theme-grid">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <!-- PLAYTHROUGH MANAGEMENT -->
+    <div class="sp-section">
+      <div class="sp-title">CHARACTERS &amp; PLAYTHROUGHS</div>
+      <div class="pt-list" id="sp-pt-list"></div>
+      <button class="sp-add-btn" onclick="openNewChar()">+ NEW CHARACTER</button>
+    </div>
+
+    <!-- GOOGLE SHEETS SYNC -->
+    <div class="sp-section">
+      <div class="sp-title">GOOGLE SHEETS SYNC</div>
+      <p class="sp-hint">Paste your Apps Script web app URL to push tracker data to a Google Sheet. <a href="https://developers.google.com/apps-script/guides/web" target="_blank" style="color:var(--acc)">How to set up ↗</a></p>
+      <div class="sync-url-wrap">
+        <input class="sync-url-inp" id="sync-url-inp" type="text" placeholder="https://script.google.com/macros/s/...">
+        <button class="sync-btn" onclick="saveScriptUrl()">Save</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <button class="sync-btn" onclick="pushToSheets()">&#8679; Push</button>
+        <button class="sync-btn" onclick="pullFromSheets()">&#8681; Pull</button>
+        <button class="sync-btn" onclick="syncSheets()">&#8651; Sync</button>
+      </div>
+      <div class="sync-status" id="sync-status"></div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="sp-section">
+      <div class="sp-title">EXPORT</div>
+      <div class="sp-row">
+        <button class="sp-btn" onclick="exportCSV()">&#8659; Export CSV</button>
+        <button class="sp-btn" onclick="exportJSON()">&#8659; Export JSON</button>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <div id="shell">
@@ -679,12 +843,205 @@ document.getElementById('modal-wrap').addEventListener('click', e => {
 });
 
 /* ── THEME ── */
-function setTheme(t, btn) {
-  document.body.className = t === 'elden' ? 't-elden' : t === 'sote' ? 't-sote' : '';
-  document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+const THEMES = [
+  { id:'stars',    label:'Age of Stars',   bg:'#06090e', acc:'#9ab0e0', dark:true  },
+  { id:'elden',    label:'Elden Ring',      bg:'#060a06', acc:'#c0981e', dark:true  },
+  { id:'sote',     label:'Shadow',          bg:'#0e0606', acc:'#b82818', dark:true  },
+  { id:'l-stars',  label:'Light Stars',     bg:'#eef1f8', acc:'#2a42a8', dark:false },
+  { id:'l-elden',  label:'Light Elden',     bg:'#f5f0e2', acc:'#7a5a10', dark:false },
+  { id:'l-sote',   label:'Light Shadow',    bg:'#f0ece6', acc:'#a82010', dark:false },
+];
+
+function themeClass(t) {
+  if(t==='elden') return 't-elden';
+  if(t==='sote')  return 't-sote';
+  if(t==='l-stars') return 't-l-stars';
+  if(t==='l-elden') return 't-l-elden';
+  if(t==='l-sote')  return 't-l-sote';
+  return '';
+}
+
+function setTheme(t) {
+  document.body.className = themeClass(t);
   localStorage.setItem('er_theme', t);
+  renderThemeGrid();
   requestAnimationFrame(adjustLayout);
+}
+
+function renderThemeGrid() {
+  const cur = localStorage.getItem('er_theme') || 'stars';
+  const grid = document.getElementById('theme-grid');
+  if (!grid) return;
+  grid.innerHTML = THEMES.map(th => `
+    <button class="tg-btn ${cur===th.id?'on':''}" onclick="setTheme('${th.id}')">
+      <div class="tg-swatch" style="background:${th.bg};border-color:${th.acc};"></div>
+      <span class="tg-name">${th.label}</span>
+    </button>`).join('');
+}
+
+/* ── SETTINGS PANEL ── */
+function toggleSettings() {
+  const ov = document.getElementById('settings-overlay');
+  const isOpen = ov.classList.contains('open');
+  if (!isOpen) {
+    renderThemeGrid();
+    renderSpPtList();
+    const url = localStorage.getItem('er_script_url') || '';
+    document.getElementById('sync-url-inp').value = url;
+  }
+  ov.classList.toggle('open');
+}
+function closeSettingsOutside(e) {
+  if (e.target === document.getElementById('settings-overlay'))
+    document.getElementById('settings-overlay').classList.remove('open');
+}
+function closeSettings() { document.getElementById('settings-overlay').classList.remove('open'); }
+
+/* playthrough list in settings */
+function renderSpPtList() {
+  const el = document.getElementById('sp-pt-list');
+  if (!el) return;
+  el.innerHTML = chars.map(char => `
+    <div class="pt-item ${char===currentChar?'active-pt':''}" id="ptitem-${CSS.escape(char)}">
+      <div style="flex:1">
+        <div class="pt-item-name" id="ptname-${CSS.escape(char)}">${char}</div>
+      </div>
+      <button class="pt-icon-btn" onclick="startRename('${char.replace(/'/g,"\'")}')" title="Rename">✎</button>
+      <button class="pt-icon-btn del" onclick="deleteChar('${char.replace(/'/g,"\'")}')" title="Delete">✕</button>
+    </div>`).join('');
+}
+
+function startRename(char) {
+  const nameEl = document.getElementById('ptname-' + CSS.escape(char));
+  if (!nameEl) return;
+  const inp = document.createElement('input');
+  inp.className = 'pt-rename-inp';
+  inp.value = char;
+  inp.onblur = () => finishRename(char, inp.value.trim());
+  inp.onkeydown = e => { if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){inp.value=char;inp.blur();} };
+  nameEl.replaceWith(inp);
+  inp.focus(); inp.select();
+}
+
+function finishRename(oldName, newName) {
+  if (!newName || newName === oldName) { renderSpPtList(); return; }
+  if (chars.includes(newName)) { alert('Name already exists.'); renderSpPtList(); return; }
+  // rename all journey keys
+  JOURNEYS.forEach(j => {
+    const oldKey = stateKey(oldName, j);
+    const newKey = stateKey(newName, j);
+    const data = localStorage.getItem(oldKey);
+    if (data) { localStorage.setItem(newKey, data); localStorage.removeItem(oldKey); }
+  });
+  const idx = chars.indexOf(oldName);
+  chars[idx] = newName;
+  if (currentChar === oldName) currentChar = newName;
+  saveMeta();
+  buildSelectors();
+  renderSpPtList();
+}
+
+function deleteChar(char) {
+  if (chars.length <= 1) { alert('Cannot delete your only character.'); return; }
+  if (!confirm(\`Delete "\${char}" and all their progress? This cannot be undone.\`)) return;
+  JOURNEYS.forEach(j => localStorage.removeItem(stateKey(char, j)));
+  chars = chars.filter(c => c !== char);
+  saveMeta();
+  if (currentChar === char) {
+    currentChar = chars[0];
+    currentJourney = 'NG';
+    state = loadState() || freshState();
+  }
+  buildSelectors();
+  renderSpPtList();
+  renderAll();
+}
+
+/* ── GOOGLE SHEETS SYNC ── */
+function saveScriptUrl() {
+  const url = document.getElementById('sync-url-inp').value.trim();
+  localStorage.setItem('er_script_url', url);
+  setStatus('Script URL saved ✓', 'ok');
+}
+
+function setStatus(msg, cls='') {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg; el.className = 'sync-status ' + cls;
+  if (cls === 'ok') setTimeout(() => { el.textContent = ''; el.className = 'sync-status'; }, 4000);
+}
+
+function buildSyncPayload() {
+  const base = bStats(state.bosses), sote = bStats(state.sote_bosses);
+  const weap = mStats(state.weapons);
+  const rows = [];
+  // bosses
+  for (const [r,bs] of Object.entries(state.bosses))
+    for (const b of bs)
+      rows.push({section:'Boss',region:r,name:clean(b.name),dlc:'No',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
+  for (const [r,bs] of Object.entries(state.sote_bosses))
+    for (const b of bs)
+      rows.push({section:'Boss SotE',region:r,name:b.name,dlc:'Yes',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
+  for (const [cat,ws] of Object.entries(state.weapons))
+    for (const w of ws)
+      rows.push({section:'Weapon',region:cat,name:w.name,dlc:isDLC(w.name)?'Yes':'No',status:w.collected?'Collected':'Not Collected',deaths:''});
+  for (const s of [...state.sorceries,...state.incantations])
+    rows.push({section:'Spell',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  for (const s of state.spirit_ashes)
+    rows.push({section:'Spirit Ash',region:'',name:s.name,dlc:'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  for (const t of state.talismans)
+    rows.push({section:'Talisman',region:'',name:t.name,dlc:isDLC(t.name)?'Yes':'No',status:t.collected?'Collected':'Not Collected',deaths:''});
+  return { character: currentChar, journey: currentJourney, timestamp: new Date().toISOString(), rows };
+}
+
+async function pushToSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved — add one above first.','err'); return; }
+  setStatus('Pushing…');
+  try {
+    const res = await fetch(url, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'push', payload: buildSyncPayload() })
+    });
+    setStatus('Pushed to Google Sheets ✓','ok');
+  } catch(e) { setStatus('Push failed: ' + e.message,'err'); }
+}
+
+async function pullFromSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved.','err'); return; }
+  setStatus('Pulling…');
+  try {
+    const res = await fetch(url + '?action=pull&char=' + encodeURIComponent(currentChar) + '&journey=' + encodeURIComponent(currentJourney));
+    const data = await res.json();
+    if (data.state) {
+      state = data.state;
+      saveState();
+      renderAll();
+      setStatus('Pulled from Google Sheets ✓','ok');
+    } else { setStatus('No data found for this character/journey.','err'); }
+  } catch(e) { setStatus('Pull failed: ' + e.message,'err'); }
+}
+
+async function syncSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved.','err'); return; }
+  setStatus('Syncing…');
+  try {
+    // push first, then pull
+    await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'sync', payload: buildSyncPayload() }) });
+    setStatus('Synced ✓','ok');
+  } catch(e) { setStatus('Sync failed: ' + e.message,'err'); }
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify({character:currentChar,journey:currentJourney,state},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = \`er_\${currentChar.replace(/\W/g,'_')}_\${currentJourney.replace('+','p')}.json\`;
+  a.click();
 }
 
 /* ── TABS ── */
@@ -1097,12 +1454,7 @@ state = loadState() || freshState();
 buildSelectors();
 
 const savedTheme = localStorage.getItem('er_theme') || 'stars';
-if (savedTheme !== 'stars') {
-  document.body.className = savedTheme === 'elden' ? 't-elden' : 't-sote';
-  document.querySelectorAll('.t-btn').forEach(b => {
-    b.classList.toggle('on', b.dataset.t === savedTheme);
-  });
-}
+document.body.className = themeClass(savedTheme);
 
 function adjustLayout() {
   const topbar = document.getElementById('topbar');
