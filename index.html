@@ -1332,29 +1332,31 @@ function collapseAll(containerId) {
 function renderWeapons(filter) {
   const q = (filter||'').toLowerCase();
   const el = document.getElementById('weapons-body');
-  const cats = Object.entries(state.weapons).map(([cat, items]) => {
-    const f = q ? items.filter(w => w.name.toLowerCase().includes(q) || w.location.toLowerCase().includes(q)) : items;
-    return {title: cat, items: f, raw: items};
-  }).filter(c => c.items.length);
-
-  el.innerHTML = cats.map(({title, items, raw}) => {
+  el.innerHTML = '';
+  for (const [cat, rawItems] of Object.entries(state.weapons)) {
+    const items = q ? rawItems.filter(w => w.name.toLowerCase().includes(q) || (w.location||'').toLowerCase().includes(q)) : rawItems;
+    if (!items.length) continue;
     const got = items.filter(x=>x.collected).length;
-    const rows = items.map(item => {
-      const ri = raw.indexOf(item);
-      return `<div class="item-row ${item.collected?'got':''}" onclick="togWeapon('${title.replace(/'/g,"\\'")}',${ri})">
-        <div class="ick ${item.collected?'on':''}">${item.collected?'&#10003;':''}</div>
-        <div class="i-name">${item.name}${dlcBadge(item.name)}</div>
-        <div class="i-loc">${item.location||''}</div>
-      </div>`;
-    }).join('');
-    return `<div class="item-section">
-      <div class="cat-hdr" onclick="togCat(this.parentElement)">
-        <span class="cat-title">${title}</span>
-        <div class="cat-right"><span class="cat-cnt">${got}/${items.length}</span><span class="cat-chev">&#9660;</span></div>
-      </div>
-      <div class="cat-rows">${rows}</div>
-    </div>`;
-  }).join('');
+    const section = document.createElement('div');
+    section.className = 'item-section';
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-hdr';
+    hdr.innerHTML = '<span class="cat-title">' + cat + '</span><div class="cat-right"><span class="cat-cnt">' + got + '/' + items.length + '</span><span class="cat-chev">&#9660;</span></div>';
+    hdr.onclick = (function(s){ return function(){ togCat(s); }; })(section);
+    const rows = document.createElement('div');
+    rows.className = 'cat-rows';
+    for (const item of items) {
+      const ri = rawItems.indexOf(item);
+      const row = document.createElement('div');
+      row.className = 'item-row' + (item.collected ? ' got' : '');
+      row.innerHTML = '<div class="ick ' + (item.collected?'on':'') + '">' + (item.collected?'&#10003;':'') + '</div><div class="i-name">' + item.name + dlcBadge(item.name) + '</div><div class="i-loc">' + (item.location||'') + '</div>';
+      row.onclick = (function(c,i){ return function(){ togWeapon(c,i); }; })(cat, ri);
+      rows.appendChild(row);
+    }
+    section.appendChild(hdr);
+    section.appendChild(rows);
+    el.appendChild(section);
+  }
 }
 function togWeapon(cat, idx) {
   state.weapons[cat][idx].collected = !state.weapons[cat][idx].collected;
@@ -1365,31 +1367,33 @@ function togWeapon(cat, idx) {
 function renderSpells(filter) {
   const q = (filter||'').toLowerCase();
   const el = document.getElementById('spells-body');
-  const groups = [
-    {title:'SORCERIES', key:'sorceries'},
-    {title:'INCANTATIONS', key:'incantations'}
-  ];
-  el.innerHTML = groups.map(({title, key}) => {
-    const items = state[key];
-    const f = q ? items.filter(s => s.name.toLowerCase().includes(q)) : items;
-    if (!f.length) return '';
-    const got = f.filter(x=>x.collected).length;
-    const rows = f.map(item => {
-      const ri = items.indexOf(item);
-      return `<div class="item-row ${item.collected?'got':''}" onclick="togSpell('${key}',${ri})">
-        <div class="ick ${item.collected?'on':''}">${item.collected?'&#10003;':''}</div>
-        <div class="i-name">${item.name}${dlcBadge(item.name)}</div>
-        <div class="i-loc">${item.location||''}</div>
-      </div>`;
-    }).join('');
-    return `<div class="item-section">
-      <div class="cat-hdr" onclick="togCat(this.parentElement)">
-        <span class="cat-title">${title}</span>
-        <div class="cat-right"><span class="cat-cnt">${got}/${f.length}</span><span class="cat-chev">&#9660;</span></div>
-      </div>
-      <div class="cat-rows">${rows}</div>
-    </div>`;
-  }).join('');
+  el.innerHTML = '';
+  const groups = [{label:'SORCERIES', key:'sorceries'}, {label:'INCANTATIONS', key:'incantations'}];
+  for (const {label, key} of groups) {
+    const rawItems = state[key];
+    const items = q ? rawItems.filter(s => s.name.toLowerCase().includes(q)) : rawItems;
+    if (!items.length) continue;
+    const got = items.filter(x=>x.collected).length;
+    const section = document.createElement('div');
+    section.className = 'item-section';
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-hdr';
+    hdr.innerHTML = '<span class="cat-title">' + label + '</span><div class="cat-right"><span class="cat-cnt">' + got + '/' + items.length + '</span><span class="cat-chev">&#9660;</span></div>';
+    hdr.onclick = (function(s){ return function(){ togCat(s); }; })(section);
+    const rows = document.createElement('div');
+    rows.className = 'cat-rows';
+    for (const item of items) {
+      const ri = rawItems.indexOf(item);
+      const row = document.createElement('div');
+      row.className = 'item-row' + (item.collected ? ' got' : '');
+      row.innerHTML = '<div class="ick ' + (item.collected?'on':'') + '">' + (item.collected?'&#10003;':'') + '</div><div class="i-name">' + item.name + dlcBadge(item.name) + '</div><div class="i-loc">' + (item.location||'') + '</div>';
+      row.onclick = (function(k,i){ return function(){ togSpell(k,i); }; })(key, ri);
+      rows.appendChild(row);
+    }
+    section.appendChild(hdr);
+    section.appendChild(rows);
+    el.appendChild(section);
+  }
 }
 function togSpell(key, idx) {
   state[key][idx].collected = !state[key][idx].collected;
@@ -1399,24 +1403,30 @@ function togSpell(key, idx) {
 /* ── SPIRITS ── */
 function renderSpirits(filter) {
   const q = (filter||'').toLowerCase();
-  const items = q ? state.spirit_ashes.filter(s => s.name.toLowerCase().includes(q)) : state.spirit_ashes;
+  const rawItems = state.spirit_ashes;
+  const items = q ? rawItems.filter(s => s.name.toLowerCase().includes(q)) : rawItems;
   const got = items.filter(x=>x.collected).length;
-  const rows = items.map(item => {
-    const ri = state.spirit_ashes.indexOf(item);
-    return `<div class="item-row ${item.collected?'got':''}" onclick="togSpirit(${ri})">
-      <div class="ick ${item.collected?'on':''}">${item.collected?'&#10003;':''}</div>
-      <div class="i-name">${item.name}${dlcBadge(item.name)}</div>
-      <div class="i-loc">${item.location||''}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('spirits-body').innerHTML = `
-    <div class="item-section">
-      <div class="cat-hdr" onclick="togCat(this.parentElement)">
-        <span class="cat-title">SPIRIT ASHES</span>
-        <div class="cat-right"><span class="cat-cnt">${got}/${items.length}</span><span class="cat-chev">&#9660;</span></div>
-      </div>
-      <div class="cat-rows">${rows}</div>
-    </div>`;
+  const el = document.getElementById('spirits-body');
+  el.innerHTML = '';
+  const section = document.createElement('div');
+  section.className = 'item-section';
+  const hdr = document.createElement('div');
+  hdr.className = 'cat-hdr';
+  hdr.innerHTML = '<span class="cat-title">SPIRIT ASHES</span><div class="cat-right"><span class="cat-cnt">' + got + '/' + items.length + '</span><span class="cat-chev">&#9660;</span></div>';
+  hdr.onclick = (function(s){ return function(){ togCat(s); }; })(section);
+  const rows = document.createElement('div');
+  rows.className = 'cat-rows';
+  for (const item of items) {
+    const ri = rawItems.indexOf(item);
+    const row = document.createElement('div');
+    row.className = 'item-row' + (item.collected ? ' got' : '');
+    row.innerHTML = '<div class="ick ' + (item.collected?'on':'') + '">' + (item.collected?'&#10003;':'') + '</div><div class="i-name">' + item.name + dlcBadge(item.name) + '</div><div class="i-loc">' + (item.location||'') + '</div>';
+    row.onclick = (function(i){ return function(){ togSpirit(i); }; })(ri);
+    rows.appendChild(row);
+  }
+  section.appendChild(hdr);
+  section.appendChild(rows);
+  el.appendChild(section);
 }
 function togSpirit(idx) {
   state.spirit_ashes[idx].collected = !state.spirit_ashes[idx].collected;
@@ -1426,24 +1436,30 @@ function togSpirit(idx) {
 /* ── TALISMANS ── */
 function renderTalismans(filter) {
   const q = (filter||'').toLowerCase();
-  const items = q ? state.talismans.filter(t => t.name.toLowerCase().includes(q) || t.effect.toLowerCase().includes(q)) : state.talismans;
+  const rawItems = state.talismans;
+  const items = q ? rawItems.filter(t => t.name.toLowerCase().includes(q) || (t.effect||'').toLowerCase().includes(q)) : rawItems;
   const got = items.filter(x=>x.collected).length;
-  const rows = items.map(item => {
-    const ri = state.talismans.indexOf(item);
-    return `<div class="item-row ${item.collected?'got':''}" onclick="togTalisman(${ri})">
-      <div class="ick ${item.collected?'on':''}">${item.collected?'&#10003;':''}</div>
-      <div class="i-name">${item.name}${dlcBadge(item.name)}</div>
-      <div class="i-loc">${item.effect||''}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('talismans-body').innerHTML = `
-    <div class="item-section">
-      <div class="cat-hdr" onclick="togCat(this.parentElement)">
-        <span class="cat-title">TALISMANS</span>
-        <div class="cat-right"><span class="cat-cnt">${got}/${items.length}</span><span class="cat-chev">&#9660;</span></div>
-      </div>
-      <div class="cat-rows">${rows}</div>
-    </div>`;
+  const el = document.getElementById('talismans-body');
+  el.innerHTML = '';
+  const section = document.createElement('div');
+  section.className = 'item-section';
+  const hdr = document.createElement('div');
+  hdr.className = 'cat-hdr';
+  hdr.innerHTML = '<span class="cat-title">TALISMANS</span><div class="cat-right"><span class="cat-cnt">' + got + '/' + items.length + '</span><span class="cat-chev">&#9660;</span></div>';
+  hdr.onclick = (function(s){ return function(){ togCat(s); }; })(section);
+  const rows = document.createElement('div');
+  rows.className = 'cat-rows';
+  for (const item of items) {
+    const ri = rawItems.indexOf(item);
+    const row = document.createElement('div');
+    row.className = 'item-row' + (item.collected ? ' got' : '');
+    row.innerHTML = '<div class="ick ' + (item.collected?'on':'') + '">' + (item.collected?'&#10003;':'') + '</div><div class="i-name">' + item.name + dlcBadge(item.name) + '</div><div class="i-loc">' + (item.effect||'') + '</div>';
+    row.onclick = (function(i){ return function(){ togTalisman(i); }; })(ri);
+    rows.appendChild(row);
+  }
+  section.appendChild(hdr);
+  section.appendChild(rows);
+  el.appendChild(section);
 }
 function togTalisman(idx) {
   state.talismans[idx].collected = !state.talismans[idx].collected;
