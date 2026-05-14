@@ -1520,10 +1520,7 @@ function adjustLayout() {
 }
 
 function buildSyncPayload() {
-  const base = bStats(state.bosses), sote = bStats(state.sote_bosses);
-  const weap = mStats(state.weapons);
   const rows = [];
-  // bosses
   for (const [r,bs] of Object.entries(state.bosses))
     for (const b of bs)
       rows.push({section:'Boss',region:r,name:clean(b.name),dlc:'No',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
@@ -1533,10 +1530,12 @@ function buildSyncPayload() {
   for (const [cat,ws] of Object.entries(state.weapons))
     for (const w of ws)
       rows.push({section:'Weapon',region:cat,name:w.name,dlc:isDLC(w.name)?'Yes':'No',status:w.collected?'Collected':'Not Collected',deaths:''});
-  for (const s of [...state.sorceries,...state.incantations])
-    rows.push({section:'Spell',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  for (const s of state.sorceries)
+    rows.push({section:'Sorcery',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  for (const s of state.incantations)
+    rows.push({section:'Incantation',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
   for (const s of state.spirit_ashes)
-    rows.push({section:'Spirit Ash',region:'',name:s.name,dlc:'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+    rows.push({section:'Spirit Ash',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
   for (const t of state.talismans)
     rows.push({section:'Talisman',region:'',name:t.name,dlc:isDLC(t.name)?'Yes':'No',status:t.collected?'Collected':'Not Collected',deaths:''});
   return { character: currentChar, journey: currentJourney, timestamp: new Date().toISOString(), rows };
