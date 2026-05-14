@@ -611,8 +611,9 @@ body{
         <button class="sync-btn" onclick="pullFromSheets()">&#8681; Pull</button>
         <button class="sync-btn" onclick="syncSheets()">&#8651; Sync</button>
       </div>
-      <div style="margin-bottom:8px;">
-        <button class="sync-btn" style="width:100%;" onclick="pushAllToSheets()">&#8679; Push All Playthroughs</button>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <button class="sync-btn" style="flex:1;" onclick="pushAllToSheets()">&#8679; Push All</button>
+        <button class="sync-btn" style="flex:1;" onclick="pullAllFromSheets()">&#8681; Pull All</button>
       </div>
       <div class="sync-status" id="sync-status"></div>
     </div>
@@ -1076,7 +1077,82 @@ async function syncSheets() {
 }
 
 
-async function pushAllToSheets() {
+async function pullAllFromSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved — add one first.', 'err'); return; }
+
+  setStatus('Fetching playthrough list from sheet…');
+  try {
+    // Step 1: get list of all tabs from the sheet
+    const listUrl = url + '?action=listPlaythroughs';
+    const listRes = await fetchWithTimeout(listUrl, { method: 'GET', redirect: 'follow' }, 15000);
+    if (!listRes.ok) throw new Error('Could not reach sheet — HTTP ' + listRes.status);
+    const listData = await listRes.json();
+    if (!listData.ok || !listData.playthroughs) throw new Error(listData.error || 'No playthroughs returned');
+
+    const playthroughs = listData.playthroughs;
+    if (!playthroughs.length) { setStatus('No playthroughs found in the sheet.', 'err'); return; }
+
+    setStatus('Found ' + playthroughs.length + ' playthroughs — pulling…');
+
+    let done = 0, failed = 0, newChars = [];
+
+    // Step 2: pull each playthrough
+    for (const pt of playthroughs) {
+      try {
+        const pullUrl = url + '?action=pull'
+          + '&char=' + encodeURIComponent(pt.character)
+          + '&journey=' + encodeURIComponent(pt.journey);
+        const res = await fetchWithTimeout(pullUrl, { method: 'GET', redirect: 'follow' }, 15000);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data.ok || !data.state) throw new Error(data.error || 'No state returned');
+
+        // Save to localStorage under the correct key
+        localStorage.setItem(stateKey(pt.character, pt.journey), JSON.stringify(data.state));
+
+        // Register character if new
+        if (!chars.includes(pt.character)) {
+          chars.push(pt.character);
+          newChars.push(pt.character);
+        }
+
+        done++;
+        setStatus('Pulling… ' + done + '/' + playthroughs.length + ' complete');
+      } catch(e) {
+        failed++;
+        console.warn('Pull failed for', pt.character, pt.journey, e.message);
+      }
+    }
+
+    // Step 3: persist updated character list and reload current state
+    saveMeta();
+    buildSelectors();
+
+    // If current char/journey was pulled, reload it
+    const currentKey = stateKey(currentChar, currentJourney);
+    const refreshed = localStorage.getItem(currentKey);
+    if (refreshed) {
+      state = JSON.parse(refreshed);
+      renderAll();
+    }
+
+    if (failed === 0) {
+      const newMsg = newChars.length ? ' (' + newChars.length + ' new character' + (newChars.length > 1 ? 's' : '') + ' added)' : '';
+      setStatus('All ' + done + ' playthroughs pulled ✓' + newMsg, 'ok');
+    } else {
+      setStatus(done + ' pulled, ' + failed + ' failed — check console for details', 'err');
+    }
+
+    // Re-render the pt list in settings
+    renderSpPtList();
+
+  } catch(e) {
+    setStatus('Pull All failed: ' + e.message, 'err');
+  }
+}
+
+
   const url = localStorage.getItem('er_script_url');
   if (!url) { setStatus('No script URL saved — add one first.', 'err'); return; }
 
