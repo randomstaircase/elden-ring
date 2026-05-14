@@ -943,7 +943,8 @@ function finishRename(oldName, newName) {
 
 function deleteChar(char) {
   if (chars.length <= 1) { alert('Cannot delete your only character.'); return; }
-  if (!confirm(\`Delete "\${char}" and all their progress? This cannot be undone.\`)) return;
+  const msg = 'Delete "' + char + '" and all their progress? This cannot be undone.';
+  if (!confirm(msg)) return;
   JOURNEYS.forEach(j => localStorage.removeItem(stateKey(char, j)));
   chars = chars.filter(c => c !== char);
   saveMeta();
@@ -957,90 +958,12 @@ function deleteChar(char) {
   renderAll();
 }
 
-/* ── GOOGLE SHEETS SYNC ── */
-function saveScriptUrl() {
-  const url = document.getElementById('sync-url-inp').value.trim();
-  localStorage.setItem('er_script_url', url);
-  setStatus('Script URL saved ✓', 'ok');
-}
-
-function setStatus(msg, cls='') {
-  const el = document.getElementById('sync-status');
-  if (!el) return;
-  el.textContent = msg; el.className = 'sync-status ' + cls;
-  if (cls === 'ok') setTimeout(() => { el.textContent = ''; el.className = 'sync-status'; }, 4000);
-}
-
-function buildSyncPayload() {
-  const base = bStats(state.bosses), sote = bStats(state.sote_bosses);
-  const weap = mStats(state.weapons);
-  const rows = [];
-  // bosses
-  for (const [r,bs] of Object.entries(state.bosses))
-    for (const b of bs)
-      rows.push({section:'Boss',region:r,name:clean(b.name),dlc:'No',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
-  for (const [r,bs] of Object.entries(state.sote_bosses))
-    for (const b of bs)
-      rows.push({section:'Boss SotE',region:r,name:b.name,dlc:'Yes',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
-  for (const [cat,ws] of Object.entries(state.weapons))
-    for (const w of ws)
-      rows.push({section:'Weapon',region:cat,name:w.name,dlc:isDLC(w.name)?'Yes':'No',status:w.collected?'Collected':'Not Collected',deaths:''});
-  for (const s of [...state.sorceries,...state.incantations])
-    rows.push({section:'Spell',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
-  for (const s of state.spirit_ashes)
-    rows.push({section:'Spirit Ash',region:'',name:s.name,dlc:'No',status:s.collected?'Collected':'Not Collected',deaths:''});
-  for (const t of state.talismans)
-    rows.push({section:'Talisman',region:'',name:t.name,dlc:isDLC(t.name)?'Yes':'No',status:t.collected?'Collected':'Not Collected',deaths:''});
-  return { character: currentChar, journey: currentJourney, timestamp: new Date().toISOString(), rows };
-}
-
-async function pushToSheets() {
-  const url = localStorage.getItem('er_script_url');
-  if (!url) { setStatus('No script URL saved — add one above first.','err'); return; }
-  setStatus('Pushing…');
-  try {
-    const res = await fetch(url, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'push', payload: buildSyncPayload() })
-    });
-    setStatus('Pushed to Google Sheets ✓','ok');
-  } catch(e) { setStatus('Push failed: ' + e.message,'err'); }
-}
-
-async function pullFromSheets() {
-  const url = localStorage.getItem('er_script_url');
-  if (!url) { setStatus('No script URL saved.','err'); return; }
-  setStatus('Pulling…');
-  try {
-    const res = await fetch(url + '?action=pull&char=' + encodeURIComponent(currentChar) + '&journey=' + encodeURIComponent(currentJourney));
-    const data = await res.json();
-    if (data.state) {
-      state = data.state;
-      saveState();
-      renderAll();
-      setStatus('Pulled from Google Sheets ✓','ok');
-    } else { setStatus('No data found for this character/journey.','err'); }
-  } catch(e) { setStatus('Pull failed: ' + e.message,'err'); }
-}
-
-async function syncSheets() {
-  const url = localStorage.getItem('er_script_url');
-  if (!url) { setStatus('No script URL saved.','err'); return; }
-  setStatus('Syncing…');
-  try {
-    // push first, then pull
-    await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'sync', payload: buildSyncPayload() }) });
-    setStatus('Synced ✓','ok');
-  } catch(e) { setStatus('Sync failed: ' + e.message,'err'); }
-}
 
 function exportJSON() {
   const blob = new Blob([JSON.stringify({character:currentChar,journey:currentJourney,state},null,2)],{type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = \`er_\${currentChar.replace(/\W/g,'_')}_\${currentJourney.replace('+','p')}.json\`;
+  a.download = 'er_' + currentChar.replace(/\W/g,'_') + '_' + currentJourney.replace('+','p') + '.json';
   a.click();
 }
 
@@ -1465,6 +1388,30 @@ function adjustLayout() {
   subnav.style.top = topH + 'px';
   shell.style.paddingTop = (topH + navH) + 'px';
 }
+
+function buildSyncPayload() {
+  const base = bStats(state.bosses), sote = bStats(state.sote_bosses);
+  const weap = mStats(state.weapons);
+  const rows = [];
+  // bosses
+  for (const [r,bs] of Object.entries(state.bosses))
+    for (const b of bs)
+      rows.push({section:'Boss',region:r,name:clean(b.name),dlc:'No',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
+  for (const [r,bs] of Object.entries(state.sote_bosses))
+    for (const b of bs)
+      rows.push({section:'Boss SotE',region:r,name:b.name,dlc:'Yes',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
+  for (const [cat,ws] of Object.entries(state.weapons))
+    for (const w of ws)
+      rows.push({section:'Weapon',region:cat,name:w.name,dlc:isDLC(w.name)?'Yes':'No',status:w.collected?'Collected':'Not Collected',deaths:''});
+  for (const s of [...state.sorceries,...state.incantations])
+    rows.push({section:'Spell',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  for (const s of state.spirit_ashes)
+    rows.push({section:'Spirit Ash',region:'',name:s.name,dlc:'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  for (const t of state.talismans)
+    rows.push({section:'Talisman',region:'',name:t.name,dlc:isDLC(t.name)?'Yes':'No',status:t.collected?'Collected':'Not Collected',deaths:''});
+  return { character: currentChar, journey: currentJourney, timestamp: new Date().toISOString(), rows };
+}
+
 
 window.addEventListener('resize', adjustLayout);
 renderAll();
