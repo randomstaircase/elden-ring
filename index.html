@@ -606,10 +606,13 @@ body{
         <input class="sync-url-inp" id="sync-url-inp" type="text" placeholder="https://script.google.com/macros/s/...">
         <button class="sync-btn" onclick="saveScriptUrl()">Save</button>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:8px;">
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
         <button class="sync-btn" onclick="pushToSheets()">&#8679; Push</button>
         <button class="sync-btn" onclick="pullFromSheets()">&#8681; Pull</button>
         <button class="sync-btn" onclick="syncSheets()">&#8651; Sync</button>
+      </div>
+      <div style="margin-bottom:8px;">
+        <button class="sync-btn" style="width:100%;" onclick="pushAllToSheets()">&#8679; Push All Playthroughs</button>
       </div>
       <div class="sync-status" id="sync-status"></div>
     </div>
@@ -1072,6 +1075,69 @@ async function syncSheets() {
   } catch(e) { setStatus('Sync failed: ' + e.message, 'err'); }
 }
 
+
+async function pushAllToSheets() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved — add one first.', 'err'); return; }
+
+  // Collect every char × journey that has saved data
+  const targets = [];
+  for (const char of chars) {
+    for (const journey of JOURNEYS) {
+      if (localStorage.getItem(stateKey(char, journey))) {
+        targets.push({ char, journey });
+      }
+    }
+  }
+
+  if (!targets.length) { setStatus('No saved playthroughs found.', 'err'); return; }
+
+  setStatus('Pushing all ' + targets.length + ' playthroughs… (may take a while)');
+
+  let done = 0, failed = 0;
+  for (const { char, journey } of targets) {
+    try {
+      // Load that playthrough's state
+      const ptState = JSON.parse(localStorage.getItem(stateKey(char, journey)));
+
+      // Build payload using that state (temporarily swap)
+      const savedChar = currentChar, savedJourney = currentJourney, savedState = state;
+      currentChar = char; currentJourney = journey; state = ptState;
+      const payload = buildSyncPayload();
+      currentChar = savedChar; currentJourney = savedJourney; state = savedState;
+
+      const payloadB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const getUrl = url + '?action=push&char=' + encodeURIComponent(char)
+        + '&journey=' + encodeURIComponent(journey)
+        + '&data=' + encodeURIComponent(payloadB64);
+
+      if (getUrl.length < 2000) {
+        const res = await fetchWithTimeout(getUrl, { method: 'GET', redirect: 'follow' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        await res.json();
+      } else {
+        const res = await fetchWithTimeout(url, {
+          method: 'POST', redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'push', payload })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        await res.json();
+      }
+      done++;
+      setStatus('Pushing… ' + done + '/' + targets.length + ' complete');
+    } catch(e) {
+      failed++;
+      console.warn('Push failed for', char, journey, e.message);
+    }
+  }
+
+  if (failed === 0) {
+    setStatus('All ' + done + ' playthroughs pushed ✓', 'ok');
+  } else {
+    setStatus(done + ' pushed, ' + failed + ' failed — check console for details', 'err');
+  }
+}
 
 function exportJSON() {
   const blob = new Blob([JSON.stringify({character:currentChar,journey:currentJourney,state},null,2)],{type:'application/json'});
