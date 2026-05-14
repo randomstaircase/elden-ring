@@ -976,49 +976,102 @@ function setStatus(msg, cls) {
   if (cls === 'ok') setTimeout(function() { el.textContent = ''; el.className = 'sync-status'; }, 4000);
 }
 
+/* ── fetchWithTimeout: aborts if Apps Script takes too long ── */
+function fetchWithTimeout(url, options, ms) {
+  ms = ms || 12000;
+  const ctrl = new AbortController();
+  const id = setTimeout(function() { ctrl.abort(); }, ms);
+  return fetch(url, Object.assign({}, options, { signal: ctrl.signal }))
+    .finally(function() { clearTimeout(id); });
+}
+
+/* ── POST to Apps Script (mobile-safe) ──
+   Apps Script redirects POST → GET on the final /exec hop.
+   Mobile browsers (esp. Safari) drop the body on redirect.
+   Workaround: encode payload as a base64 GET param instead.
+   Falls back to POST if GET param is too long.
+── */
+async function scriptRequest(action, extraParams) {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setStatus('No script URL saved — add one first.', 'err'); return null; }
+
+  const payload = buildSyncPayload();
+  const paramStr = 'action=' + encodeURIComponent(action)
+    + '&char=' + encodeURIComponent(currentChar)
+    + '&journey=' + encodeURIComponent(currentJourney)
+    + (extraParams || '');
+
+  // Try GET with payload as base64 (avoids redirect body-drop on mobile)
+  const payloadB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const getUrl = url + '?' + paramStr + '&data=' + encodeURIComponent(payloadB64);
+
+  // If URL too long (>2000 chars) fall back to POST
+  if (getUrl.length < 2000) {
+    try {
+      const res = await fetchWithTimeout(getUrl, { method: 'GET', redirect: 'follow' });
+      if (!res.ok) throw new Error('Server returned ' + res.status);
+      return await res.json();
+    } catch(e) {
+      if (e.name === 'AbortError') throw new Error('Request timed out — Apps Script may be slow to start. Try again.');
+      throw e;
+    }
+  }
+
+  // POST fallback (desktop works fine, mobile may partially work)
+  try {
+    const res = await fetchWithTimeout(url, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, payload: payload })
+    });
+    if (!res.ok) throw new Error('Server returned ' + res.status);
+    return await res.json();
+  } catch(e) {
+    if (e.name === 'AbortError') throw new Error('Request timed out. Try again.');
+    throw e;
+  }
+}
+
 async function pushToSheets() {
   const url = localStorage.getItem('er_script_url');
   if (!url) { setStatus('No script URL saved — add one first.', 'err'); return; }
-  setStatus('Pushing…');
+  setStatus('Pushing… (may take 5–10s)');
   try {
-    await fetch(url, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ action: 'push', payload: buildSyncPayload() })
-    });
-    setStatus('Pushed to Google Sheets ✓', 'ok');
+    const data = await scriptRequest('push');
+    if (data && data.ok) setStatus('Pushed to Google Sheets ✓  (' + (data.rows || '') + ' rows)', 'ok');
+    else setStatus('Push failed: ' + (data ? data.error || 'unknown' : 'no response'), 'err');
   } catch(e) { setStatus('Push failed: ' + e.message, 'err'); }
 }
 
 async function pullFromSheets() {
   const url = localStorage.getItem('er_script_url');
   if (!url) { setStatus('No script URL saved.', 'err'); return; }
-  setStatus('Pulling…');
+  setStatus('Pulling… (may take 5–10s)');
   try {
-    const res = await fetch(url + '?action=pull&char=' + encodeURIComponent(currentChar) + '&journey=' + encodeURIComponent(currentJourney));
-    const data = await res.json();
-    if (data.state) {
+    const data = await scriptRequest('pull');
+    if (data && data.state) {
       state = data.state;
       saveState();
       renderAll();
       setStatus('Pulled from Google Sheets ✓', 'ok');
-    } else { setStatus('No data found for this character/journey.', 'err'); }
+    } else {
+      setStatus('No saved data found for ' + currentChar + ' / ' + currentJourney + '. Push first.', 'err');
+    }
   } catch(e) { setStatus('Pull failed: ' + e.message, 'err'); }
 }
 
 async function syncSheets() {
   const url = localStorage.getItem('er_script_url');
   if (!url) { setStatus('No script URL saved.', 'err'); return; }
-  setStatus('Syncing…');
+  setStatus('Syncing… (may take 5–10s)');
   try {
-    await fetch(url, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ action: 'sync', payload: buildSyncPayload() })
-    });
-    setStatus('Synced ✓', 'ok');
+    const data = await scriptRequest('sync');
+    if (data && data.ok) setStatus('Synced ✓', 'ok');
+    else setStatus('Sync failed: ' + (data ? data.error || 'unknown' : 'no response'), 'err');
   } catch(e) { setStatus('Sync failed: ' + e.message, 'err'); }
 }
+
 
 function exportJSON() {
   const blob = new Blob([JSON.stringify({character:currentChar,journey:currentJourney,state},null,2)],{type:'application/json'});
