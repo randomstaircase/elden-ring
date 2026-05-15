@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Elden Ring Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* ── THEMES ── */
 :root {
@@ -62,7 +62,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
 body{
-  font-family:'Crimson Pro',Georgia,serif;
+  font-family:Optima,Candara,sans-serif;
   background:var(--bg0);color:var(--text);
   min-height:100vh;
 }
@@ -104,7 +104,7 @@ body{
 .t-sote #topbar{background:rgba(14,6,6,.97);}
 
 .logo{
-  font-family:'Cinzel',serif;font-size:13px;font-weight:700;
+  font-family:'Cinzel',serif;font-size:15px;font-weight:700;
   letter-spacing:.14em;color:var(--acc);white-space:nowrap;flex-shrink:0;
 }
 .logo em{
@@ -122,7 +122,7 @@ body{
 .t-btn{
   padding:3px 10px;border-radius:14px;border:none;
   background:transparent;color:var(--text2);
-  font-family:'Crimson Pro',serif;font-size:11px;cursor:pointer;
+  font-family:Optima,Candara,sans-serif;font-size:13px;cursor:pointer;
   letter-spacing:.04em;transition:all .18s;white-space:nowrap;
 }
 .t-btn.on{background:var(--acc);color:var(--bg0);font-weight:600;}
@@ -132,9 +132,9 @@ body{
 .pt-sep{color:var(--text3);font-size:11px;opacity:.6;}
 .sel{
   background:var(--bg3);border:1px solid var(--border);
-  color:var(--text);font-family:'Crimson Pro',serif;font-size:12px;
+  color:var(--text);font-family:Optima,Candara,sans-serif;font-size:14px;
   padding:4px 8px;border-radius:6px;cursor:pointer;outline:none;
-  max-width:130px;
+  max-width:140px;
 }
 .sel option{background:#0b1220;}
 .icon-btn{
@@ -208,7 +208,7 @@ body{
 .sp-section{padding:16px 18px;border-bottom:1px solid var(--border2);}
 .sp-section:last-child{border-bottom:none;}
 .sp-title{
-  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.18em;
   color:var(--text2);margin-bottom:12px;
 }
 /* theme grid */
@@ -249,7 +249,7 @@ body{
 .sync-url-wrap{display:flex;gap:6px;margin-bottom:8px;}
 .sync-url-inp{
   flex:1;background:var(--bg3);border:1px solid var(--border);
-  color:var(--text);font-family:'Crimson Pro',serif;font-size:12px;
+  color:var(--text);font-family:Optima,Candara,sans-serif;font-size:12px;
   padding:7px 10px;border-radius:7px;outline:none;
 }
 .sync-url-inp:focus{border-color:var(--acc);}
@@ -257,7 +257,7 @@ body{
 .sync-btn{
   padding:7px 12px;border-radius:7px;border:1px solid var(--border);
   background:var(--bg3);color:var(--acc);
-  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.08em;
   cursor:pointer;transition:all .15s;white-space:nowrap;
 }
 .sync-btn:hover{background:var(--acc);color:var(--bg0);}
@@ -266,7 +266,7 @@ body{
 .sync-status{font-size:11px;color:var(--text2);font-style:italic;min-height:18px;}
 .sync-status.ok{color:var(--felled-text);}
 .sync-status.err{color:#e05050;}
-.sp-hint{font-size:10.5px;color:var(--text2);line-height:1.5;font-style:italic;margin-bottom:8px;}
+.sp-hint{font-size:12.5px;color:var(--text2);line-height:1.5;font-style:italic;margin-bottom:8px;}
 /* export */
 .sp-row{display:flex;gap:6px;flex-wrap:wrap;}
 .sp-btn{
@@ -288,7 +288,7 @@ body{
 /* inline rename input */
 .pt-rename-inp{
   flex:1;background:var(--bg2);border:1px solid var(--acc);
-  color:var(--text);font-family:'Crimson Pro',serif;font-size:12px;
+  color:var(--text);font-family:Optima,Candara,sans-serif;font-size:12px;
   padding:2px 7px;border-radius:5px;outline:none;
 }
 
@@ -309,7 +309,7 @@ body{
 .modal p{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.55;font-style:italic;}
 .modal input{
   width:100%;background:var(--bg3);border:1px solid var(--border);
-  color:var(--text);font-family:'Crimson Pro',serif;font-size:14px;
+  color:var(--text);font-family:Optima,Candara,sans-serif;font-size:14px;
   padding:8px 11px;border-radius:6px;outline:none;margin-bottom:14px;
 }
 .modal input:focus{border-color:var(--acc);}
@@ -348,19 +348,19 @@ body{
 .sc.acc-death::before{background:#7a2020;}
 .sc.acc-spell::before{background:var(--acc2);}
 .sc-lbl{
-  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.16em;
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.14em;
   color:var(--text2);margin-bottom:4px;
 }
 .sc-num{
-  font-family:'Cinzel',serif;font-size:24px;font-weight:700;
+  font-family:'Cinzel',serif;font-size:27px;font-weight:700;
   color:var(--acc);line-height:1;
 }
 .sc.acc-sote .sc-num{color:var(--sote-acc);}
 .sc.acc-death .sc-num{color:#d07070;}
 .sc.acc-spell .sc-num{color:var(--acc2);}
 .sc-line{display:flex;gap:6px;align-items:baseline;margin-top:3px;}
-.sc-ll{font-size:11px;color:var(--text2);font-style:italic;min-width:56px;}
-.sc-lv{font-size:13px;color:var(--text);}
+.sc-ll{font-size:13px;color:var(--text2);font-style:italic;min-width:60px;}
+.sc-lv{font-size:15px;color:var(--text);}
 .sc-lv.g{color:var(--felled-text);}
 .sc-lv.r{color:#d07070;}
 .prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:8px;overflow:hidden;}
@@ -379,8 +379,8 @@ body{
 .ldr-row{display:flex;align-items:center;gap:8px;padding:5px 12px;border-bottom:1px solid var(--border2);}
 .ldr-row:last-child{border-bottom:none;}
 .ldr-n{font-size:9px;font-family:'Cinzel',serif;color:var(--text2);width:14px;flex-shrink:0;}
-.ldr-name{flex:1;font-size:13px;color:var(--text);line-height:1.2;}
-.ldr-d{font-family:'Cinzel',serif;font-size:15px;color:#d07070;flex-shrink:0;}
+.ldr-name{flex:1;font-size:15px;color:var(--text);line-height:1.2;}
+.ldr-d{font-family:'Cinzel',serif;font-size:17px;color:#d07070;flex-shrink:0;}
 .ldr-bar{height:2px;background:var(--bg4);border-radius:1px;margin-top:1px;}
 .ldr-bar-f{height:100%;background:#6a1818;border-radius:1px;}
 .ldr-empty{padding:10px 12px;font-size:11px;color:var(--text3);font-style:italic;}
@@ -401,11 +401,11 @@ body{
 .r-hdr:hover{background:rgba(154,176,224,.025);}
 .sote .r-hdr:hover{background:rgba(184,40,24,.025);}
 .r-title{
-  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.13em;
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.11em;
   color:var(--acc);flex:1;
 }
 .sote .r-title{color:var(--sote-acc);}
-.r-meta{font-size:10.5px;color:var(--text2);font-style:italic;}
+.r-meta{font-size:12.5px;color:var(--text2);font-style:italic;}
 .r-chev{color:var(--text2);font-size:9px;transition:transform .2s;}
 .region-block.col .r-chev{transform:rotate(-90deg);}
 .region-block.col .r-body{display:none;}
@@ -413,7 +413,7 @@ body{
 /* ── BOSS TABLE ── */
 .boss-tbl{width:100%;border-collapse:collapse;}
 .boss-tbl th{
-  font-family:'Cinzel',serif;font-size:7px;letter-spacing:.12em;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;
   color:var(--text2);padding:7px 14px 5px;text-align:left;
   border-bottom:1px solid var(--border2);
 }
@@ -422,7 +422,7 @@ body{
 .boss-tbl tr:hover td{background:rgba(154,176,224,.02);}
 .sote .boss-tbl tr:hover td{background:rgba(184,40,24,.02);}
 .boss-tbl tr.killed-row td{background:rgba(30,74,46,.18);}
-.b-nm{font-size:12px;color:var(--text);}
+.b-nm{font-size:14px;color:var(--text);}
 .b-nm.k{color:var(--felled-text);}
 .sote .b-nm{color:var(--sote-text);}
 .ck{
@@ -433,8 +433,8 @@ body{
 .ck.on{background:var(--felled);border-color:var(--felled-border);color:var(--felled-text);}
 .sote .ck.on{background:var(--sote-acc);border-color:var(--sote-acc);color:#ffe8e0;}
 .d-inp{
-  width:48px;background:var(--bg3);border:1px solid var(--border2);
-  color:var(--text);font-family:'Crimson Pro',serif;font-size:12px;
+  width:54px;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);font-family:Optima,Candara,sans-serif;font-size:14px;
   padding:2px 5px;border-radius:4px;text-align:center;outline:none;
 }
 .d-inp:focus{border-color:var(--acc);}
@@ -453,10 +453,10 @@ body{
   cursor:pointer;user-select:none;
 }
 .cat-title{
-  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:var(--acc);
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:.15em;color:var(--acc);
 }
 .cat-right{display:flex;align-items:center;gap:10px;}
-.cat-cnt{font-size:10px;color:var(--text2);font-style:italic;}
+.cat-cnt{font-size:12px;color:var(--text2);font-style:italic;}
 .cat-chev{color:var(--text2);font-size:9px;transition:transform .18s;}
 .cat-collapsed .cat-chev{transform:rotate(-90deg);}
 .cat-collapsed .cat-rows{display:none;}
@@ -475,7 +475,7 @@ body{
 }
 .ick.on{background:var(--felled);border-color:var(--felled-border);color:var(--felled-text);}
 .i-name{
-  flex:1;font-size:12px;color:var(--text);
+  flex:1;font-size:14px;color:var(--text);
   display:flex;align-items:center;gap:5px;
 }
 .item-row.got .i-name{color:var(--felled-text);}
@@ -486,7 +486,7 @@ body{
   padding:1px 5px;border-radius:3px;border:1px solid rgba(184,40,24,.28);
   flex-shrink:0;
 }
-.i-loc{font-size:10.5px;color:var(--text2);font-style:italic;text-align:right;max-width:280px;}
+.i-loc{font-size:12.5px;color:var(--text2);font-style:italic;text-align:right;max-width:280px;}
 
 /* collapse-all toolbar */
 .sec-toolbar{
@@ -494,19 +494,44 @@ body{
   margin-bottom:10px;
 }
 .sec-toolbar-title{
-  font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.2em;color:var(--text2);
+  font-family:'Cinzel',serif;font-size:9.5px;letter-spacing:.16em;color:var(--text2);
 }
 .tog-all-btn{
   background:transparent;border:1px solid var(--border);color:var(--text2);
-  font-family:'Cinzel',serif;font-size:7px;letter-spacing:.1em;
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:.1em;
   padding:4px 10px;border-radius:5px;cursor:pointer;transition:all .15s;
 }
 .tog-all-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--acc);}
 
 /* search */
 .search-bar{
+
+/* general deaths widget */
+.gen-deaths-bar{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:12px 16px;
+  display:flex;align-items:center;gap:14px;
+}
+.gen-deaths-bar.sote{background:var(--sote-bg);border-color:var(--sote-border);}
+.gen-deaths-label{
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.12em;
+  color:var(--text2);flex:1;
+}
+.gen-deaths-bar.sote .gen-deaths-label{color:var(--sote-text2);}
+.gen-deaths-inp{
+  width:74px;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);font-family:Optima,Candara,sans-serif;font-size:18px;
+  padding:4px 8px;border-radius:6px;text-align:center;outline:none;font-weight:600;
+}
+.gen-deaths-inp:focus{border-color:var(--acc);}
+.gen-deaths-bar.sote .gen-deaths-inp:focus{border-color:var(--sote-acc);}
+.gen-deaths-inp.hot{color:#d07070;}
+.gen-deaths-sublabel{font-size:12px;color:var(--text2);font-style:italic;}
+.gen-deaths-bar.sote .gen-deaths-sublabel{color:var(--sote-text2);}
+
+.search-bar{
   width:100%;background:var(--bg2);border:1px solid var(--border);
-  color:var(--text);font-family:'Crimson Pro',serif;font-size:13px;
+  color:var(--text);font-family:Optima,Candara,sans-serif;font-size:13px;
   padding:8px 12px;border-radius:8px;outline:none;margin-bottom:12px;
 }
 .search-bar:focus{border-color:var(--acc);}
@@ -645,9 +670,10 @@ body{
   <div id="tab-bosses" class="tab-pane">
     <input class="search-bar" placeholder="Search bosses..." oninput="filterBosses(this.value)" id="boss-search">
     <div class="sec-toolbar">
-      <span class="sec-toolbar-title">BASE GAME REGIONS</span>
+      <span class="sec-toolbar-title">ELDEN RING REGIONS</span>
       <button class="tog-all-btn" onclick="collapseAll('boss-body')">Collapse All</button>
     </div>
+    <div id="general-deaths-base" style="margin-bottom:12px;"></div>
     <div id="boss-body"></div>
   </div>
   <div id="tab-sote" class="tab-pane">
@@ -656,6 +682,7 @@ body{
       <span class="sec-toolbar-title" style="color:var(--sote-text2)">SHADOW REGIONS</span>
       <button class="tog-all-btn" style="border-color:var(--sote-border);color:var(--sote-text2);" onclick="collapseAll('sote-body')">Collapse All</button>
     </div>
+    <div id="general-deaths-sote" style="margin-bottom:12px;"></div>
     <div id="sote-body"></div>
   </div>
   <div id="tab-weapons" class="tab-pane">
@@ -757,6 +784,8 @@ function saveState() {
 
 function freshState() {
   return {
+    general_deaths_base: 0,
+    general_deaths_sote: 0,
     bosses: Object.fromEntries(Object.entries(RAW.bosses).map(([r,bs]) => [r, bs.map(b => ({name:b.name, killed:false, attempts:0}))])),
     sote_bosses: Object.fromEntries(Object.entries(RAW.sote_bosses).map(([r,bs]) => [r, bs.map(b => ({name:b.name, killed:false, attempts:0}))])),
     weapons: Object.fromEntries(Object.entries(RAW.weapons).map(([c,ws]) => [c, ws.map(w => ({name:w.name, location:w.location, collected:false}))])),
@@ -1332,9 +1361,9 @@ function renderDash() {
   <div class="dash-sec">
     <div class="dash-sec-title">BOSSES</div>
     <div class="stat-grid sg-2" style="margin-bottom:8px">
-      ${sc('BASE GAME',`${base.killed}/${base.total}`,[
+      ${sc('ELDEN RING',`${base.killed}/${base.total}`,[
         {l:'completion',v:`${pct(base.killed,base.total)}%`,c:'g'},
-        {l:'deaths',v:base.deaths,c:'r'},
+        {l:'deaths',v:base.deaths+(state.general_deaths_base||0),c:'r'},
         {l:'avg / kill',v:base.killed?(Math.round(base.deaths/base.killed*10)/10)+' deaths':'—'},
       ],'',pct(base.killed,base.total))}
       ${sc('SHADOW OF THE ERDTREE',`${sote.killed}/${sote.total}`,[
@@ -1344,8 +1373,8 @@ function renderDash() {
       ],'acc-sote',pct(sote.killed,sote.total))}
     </div>
     <div class="stat-grid sg-3">
-      ${sc('TOTAL DEATHS',base.deaths+sote.deaths,[
-        {l:'base game',v:base.deaths,c:'r'},{l:'SotE DLC',v:sote.deaths,c:'r'}
+      ${sc('TOTAL DEATHS',(base.deaths+(state.general_deaths_base||0))+(sote.deaths+(state.general_deaths_sote||0)),[
+        {l:'Elden Ring',v:(base.deaths+(state.general_deaths_base||0)),c:'r'},{l:'SotE',v:(sote.deaths+(state.general_deaths_sote||0)),c:'r'}
       ],'acc-death',null)}
       ${sc('HARDEST BOSS',hardest?hardest.attempts:'—',[
         {l:'name',v:hardest?clean(hardest.name):'none yet'},{l:'deaths',v:hardest?hardest.attempts:'0',c:'r'}
@@ -1381,7 +1410,7 @@ function renderDash() {
 
   <div class="ldr-grid">
     <div class="ldr">
-      <div class="ldr-hdr">MOST DEATHS — BASE GAME</div>
+      <div class="ldr-hdr">MOST DEATHS — ELDEN RING</div>
       ${allBase.slice(0,8).map((b,i)=>`
         <div class="ldr-row">
           <div class="ldr-n">${i+1}</div>
@@ -1439,6 +1468,45 @@ function renderBosses(filter) {
   }
 }
 function filterBosses(v) { renderBosses(v); }
+
+function renderGeneralDeathsBase() {
+  const el = document.getElementById('general-deaths-base');
+  if (!el) return;
+  const val = state.general_deaths_base || 0;
+  el.innerHTML = `<div class="gen-deaths-bar">
+    <div>
+      <div class="gen-deaths-label">GENERAL DEATHS</div>
+      <div class="gen-deaths-sublabel">Deaths not tied to a specific boss — falls, enemies, hazards</div>
+    </div>
+    <input class="gen-deaths-inp ${val > 0 ? 'hot' : ''}" type="number" min="0" value="${val}"
+      onchange="setGeneralDeaths('base', this.value)" onclick="event.stopPropagation()">
+  </div>`;
+}
+
+function renderGeneralDeathsSote() {
+  const el = document.getElementById('general-deaths-sote');
+  if (!el) return;
+  const val = state.general_deaths_sote || 0;
+  el.innerHTML = `<div class="gen-deaths-bar sote">
+    <div>
+      <div class="gen-deaths-label">GENERAL DEATHS</div>
+      <div class="gen-deaths-sublabel">Deaths not tied to a specific boss</div>
+    </div>
+    <input class="gen-deaths-inp ${val > 0 ? 'hot' : ''}" type="number" min="0" value="${val}"
+      onchange="setGeneralDeaths('sote', this.value)" onclick="event.stopPropagation()">
+  </div>`;
+}
+
+function setGeneralDeaths(type, val) {
+  const n = parseInt(val) || 0;
+  if (type === 'base') state.general_deaths_base = n;
+  else state.general_deaths_sote = n;
+  saveState();
+  renderDash();
+  // re-render the input to update hot class without full re-render
+  if (type === 'base') renderGeneralDeathsBase();
+  else renderGeneralDeathsSote();
+}
 
 /* ── SOTE REGIONS ── */
 function renderSote(filter) {
@@ -1699,7 +1767,9 @@ function exportCSV() {
 function renderAll() {
   renderDash();
   renderBosses(document.getElementById('boss-search')?.value||'');
+  renderGeneralDeathsBase();
   renderSote();
+  renderGeneralDeathsSote();
   renderWeapons();
   renderSpells();
   renderSpirits();
