@@ -229,6 +229,15 @@ body{
   border-radius:7px;padding:7px 10px;
 }
 .pt-item.active-pt{border-color:var(--acc);}
+.pt-journeys{display:flex;flex-direction:column;gap:2px;margin-top:5px;}
+.pt-journey-row{
+  display:flex;align-items:center;gap:6px;
+  padding:3px 6px;border-radius:4px;
+  background:var(--bg2);border:0.5px solid var(--border2);
+}
+.pt-journey-row.active-journey{background:rgba(154,176,224,0.08);border-color:var(--acc);}
+.pt-journey-lbl{flex:1;font-size:11px;color:var(--text2);font-family:'Cinzel',serif;letter-spacing:.06em;}
+.pt-journey-row.active-journey .pt-journey-lbl{color:var(--acc);}
 .pt-item-name{flex:1;font-size:12px;color:var(--text);}
 .pt-item-journey{font-size:10px;color:var(--text2);font-style:italic;margin-right:4px;}
 .pt-icon-btn{
@@ -643,13 +652,31 @@ body{
       <div class="sync-status" id="sync-status"></div>
     </div>
 
-    <!-- EXPORT -->
+    <!-- EXPORT / IMPORT -->
     <div class="sp-section">
       <div class="sp-title">EXPORT</div>
-      <div class="sp-row">
+      <div class="sp-row" style="margin-bottom:8px;">
         <button class="sp-btn" onclick="exportCSV()">&#8659; Export CSV</button>
         <button class="sp-btn" onclick="exportJSON()">&#8659; Export JSON</button>
       </div>
+      <div class="sp-title" style="margin-top:10px;">IMPORT JSON</div>
+      <p class="sp-hint">Load a previously exported JSON file to restore a playthrough.</p>
+      <label class="sp-btn" style="display:block;text-align:center;cursor:pointer;">
+        &#8657; Upload JSON File
+        <input type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+      </label>
+    </div>
+
+    <!-- GOOGLE DRIVE BACKUP -->
+    <div class="sp-section">
+      <div class="sp-title">GOOGLE DRIVE BACKUP</div>
+      <p class="sp-hint">Saves a JSON snapshot to Drive on every push. Enter a Drive folder name (will be created if it doesn't exist).</p>
+      <div class="sync-url-wrap" style="margin-bottom:8px;">
+        <input class="sync-url-inp" id="drive-folder-inp" type="text" placeholder="Elden Ring Tracker">
+        <button class="sync-btn" onclick="saveDriveFolder()">Save</button>
+      </div>
+      <button class="sync-btn" style="width:100%;margin-bottom:6px;" onclick="pullJSONFromDrive()">&#8681; Pull Latest JSON from Drive</button>
+      <div class="sync-status" id="drive-status"></div>
     </div>
 
   </div>
@@ -827,11 +854,32 @@ function onCharChange(c) {
 
 function onJourneyChange(j) {
   saveState();
+  const prevJourney = currentJourney;
   currentJourney = j;
   saveMeta();
-  // Each journey for this character is independent — fresh if never played
   const saved = loadState();
-  state = saved ? saved : freshState();
+  if (saved) {
+    // Journey already has saved data — load it as-is
+    state = saved;
+  } else {
+    // New journey — carry over items from previous journey, reset bosses/deaths
+    const prevKey = stateKey(currentChar, prevJourney);
+    const prevSaved = localStorage.getItem(prevKey);
+    if (prevSaved) {
+      const prev = JSON.parse(prevSaved);
+      state = freshState();
+      // Carry over collected status for all item types
+      state.weapons     = prev.weapons;
+      state.sorceries   = prev.sorceries;
+      state.incantations= prev.incantations;
+      state.spirit_ashes= prev.spirit_ashes;
+      state.talismans   = prev.talismans;
+      // Bosses, deaths, general deaths all reset to fresh
+    } else {
+      state = freshState();
+    }
+    saveState();
+  }
   buildSelectors();
   renderAll();
 }
@@ -926,6 +974,9 @@ function toggleSettings() {
     renderSpPtList();
     const url = localStorage.getItem('er_script_url') || '';
     document.getElementById('sync-url-inp').value = url;
+    const folder = localStorage.getItem('er_drive_folder') || 'Elden Ring Tracker';
+    const dfi = document.getElementById('drive-folder-inp');
+    if (dfi) dfi.value = folder;
   }
   ov.classList.toggle('open');
 }
@@ -939,15 +990,29 @@ function closeSettings() { document.getElementById('settings-overlay').classList
 function renderSpPtList() {
   const el = document.getElementById('sp-pt-list');
   if (!el) return;
-  el.innerHTML = chars.map(char => `
-    <div class="pt-item ${char===currentChar?'active-pt':''}" id="ptitem-${CSS.escape(char)}">
+  el.innerHTML = chars.map(char => {
+    const journeyRows = JOURNEYS
+      .filter(j => localStorage.getItem(stateKey(char, j)))
+      .map(j => {
+        const active = char === currentChar && j === currentJourney;
+        return `<div class="pt-journey-row ${active ? 'active-journey' : ''}">
+          <span class="pt-journey-lbl">${j}</span>
+          <button class="pt-icon-btn del" onclick="deleteJourney('${char.replace(/'/g,"\'")}','${j}')" title="Delete ${j}">✕</button>
+        </div>`;
+      }).join('');
+    return `<div class="pt-item ${char===currentChar?'active-pt':''}" id="ptitem-${CSS.escape(char)}">
       <div style="flex:1">
         <div class="pt-item-name" id="ptname-${CSS.escape(char)}">${char}</div>
+        <div class="pt-journeys">${journeyRows}</div>
       </div>
-      <button class="pt-icon-btn" onclick="startRename('${char.replace(/'/g,"\'")}')" title="Rename">✎</button>
-      <button class="pt-icon-btn del" onclick="deleteChar('${char.replace(/'/g,"\'")}')" title="Delete">✕</button>
-    </div>`).join('');
+      <div style="display:flex;flex-direction:column;gap:3px;">
+        <button class="pt-icon-btn" onclick="startRename('${char.replace(/'/g,"\'")}')" title="Rename">✎</button>
+        <button class="pt-icon-btn del" onclick="deleteChar('${char.replace(/'/g,"\'")}')" title="Delete character">✕</button>
+      </div>
+    </div>`;
+  }).join('');
 }
+
 
 function startRename(char) {
   const nameEl = document.getElementById('ptname-' + CSS.escape(char));
@@ -997,6 +1062,37 @@ function deleteChar(char) {
 }
 
 
+function deleteJourney(char, journey) {
+  const isOnlySaved = JOURNEYS.filter(j => localStorage.getItem(stateKey(char, j))).length === 1;
+  if (isOnlySaved && chars.length === 1) {
+    alert('Cannot delete the only saved playthrough.');
+    return;
+  }
+  const msg = 'Delete ' + char + ' — ' + journey + '? This cannot be undone.';
+  if (!confirm(msg)) return;
+  localStorage.removeItem(stateKey(char, journey));
+  // If this was the active journey, switch to another
+  if (char === currentChar && journey === currentJourney) {
+    const remaining = JOURNEYS.filter(j => localStorage.getItem(stateKey(char, j)));
+    if (remaining.length > 0) {
+      currentJourney = remaining[0];
+      state = JSON.parse(localStorage.getItem(stateKey(char, remaining[0])));
+    } else {
+      // no journeys left for this char — delete the char too
+      chars = chars.filter(ch => ch !== char);
+      saveMeta();
+      currentChar = chars[0];
+      currentJourney = 'NG';
+      state = loadState() || freshState();
+    }
+  }
+  saveMeta();
+  buildSelectors();
+  renderSpPtList();
+  renderAll();
+}
+
+
 /* ── GOOGLE SHEETS SYNC ── */
 function saveScriptUrl() {
   const inp = document.getElementById('sync-url-inp');
@@ -1016,57 +1112,53 @@ function setStatus(msg, cls) {
 
 /* ── fetchWithTimeout: aborts if Apps Script takes too long ── */
 function fetchWithTimeout(url, options, ms) {
-  ms = ms || 12000;
+  ms = ms || 20000;
   const ctrl = new AbortController();
   const id = setTimeout(function() { ctrl.abort(); }, ms);
   return fetch(url, Object.assign({}, options, { signal: ctrl.signal }))
     .finally(function() { clearTimeout(id); });
 }
 
-/* ── POST to Apps Script (mobile-safe) ──
-   Apps Script redirects POST → GET on the final /exec hop.
-   Mobile browsers (esp. Safari) drop the body on redirect.
-   Workaround: encode payload as a base64 GET param instead.
-   Falls back to POST if GET param is too long.
-── */
+/* ── scriptRequest with one auto-retry ── */
 async function scriptRequest(action, extraParams) {
   const url = localStorage.getItem('er_script_url');
   if (!url) { setStatus('No script URL saved — add one first.', 'err'); return null; }
 
   const payload = buildSyncPayload();
+  payload.driveFolder = localStorage.getItem('er_drive_folder') || 'Elden Ring Tracker';
   const paramStr = 'action=' + encodeURIComponent(action)
     + '&char=' + encodeURIComponent(currentChar)
     + '&journey=' + encodeURIComponent(currentJourney)
+    + '&folder=' + encodeURIComponent(payload.driveFolder)
     + (extraParams || '');
 
-  // Try GET with payload as base64 (avoids redirect body-drop on mobile)
   const payloadB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const getUrl = url + '?' + paramStr + '&data=' + encodeURIComponent(payloadB64);
 
-  // If URL too long (>2000 chars) fall back to POST
-  if (getUrl.length < 2000) {
-    try {
-      const res = await fetchWithTimeout(getUrl, { method: 'GET', redirect: 'follow' });
+  async function attempt(isRetry) {
+    if (isRetry) setStatus('Retrying…');
+    if (getUrl.length < 2000) {
+      const res = await fetchWithTimeout(getUrl, { method: 'GET', redirect: 'follow' }, 20000);
       if (!res.ok) throw new Error('Server returned ' + res.status);
       return await res.json();
-    } catch(e) {
-      if (e.name === 'AbortError') throw new Error('Request timed out — Apps Script may be slow to start. Try again.');
-      throw e;
     }
-  }
-
-  // POST fallback (desktop works fine, mobile may partially work)
-  try {
     const res = await fetchWithTimeout(url, {
-      method: 'POST',
-      redirect: 'follow',
+      method: 'POST', redirect: 'follow',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: action, payload: payload })
-    });
+    }, 20000);
     if (!res.ok) throw new Error('Server returned ' + res.status);
     return await res.json();
+  }
+
+  try {
+    return await attempt(false);
   } catch(e) {
-    if (e.name === 'AbortError') throw new Error('Request timed out. Try again.');
+    if (e.name === 'AbortError' || (e.message && e.message.includes('fetch'))) {
+      // One retry after a short wait (gives Apps Script time to wake up)
+      await new Promise(r => setTimeout(r, 2000));
+      return await attempt(true);
+    }
     throw e;
   }
 }
@@ -1140,8 +1232,10 @@ async function pushAllToSheets() {
       currentChar = savedChar; currentJourney = savedJourney; state = savedState;
 
       const payloadB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const ptFolder = localStorage.getItem('er_drive_folder') || 'Elden Ring Tracker';
       const getUrl = url + '?action=push&char=' + encodeURIComponent(char)
         + '&journey=' + encodeURIComponent(journey)
+        + '&folder=' + encodeURIComponent(ptFolder)
         + '&data=' + encodeURIComponent(payloadB64);
 
       if (getUrl.length < 2000) {
@@ -1248,73 +1342,81 @@ async function pullAllFromSheets() {
   }
 }
 
-async function pushAllToSheets() {
 
-
-  const url = localStorage.getItem('er_script_url');
-  if (!url) { setStatus('No script URL saved — add one first.', 'err'); return; }
-
-  // Collect every char × journey that has saved data
-  const targets = [];
-  for (const char of chars) {
-    for (const journey of JOURNEYS) {
-      if (localStorage.getItem(stateKey(char, journey))) {
-        targets.push({ char, journey });
-      }
-    }
-  }
-
-  if (!targets.length) { setStatus('No saved playthroughs found.', 'err'); return; }
-
-  setStatus('Pushing all ' + targets.length + ' playthroughs… (may take a while)');
-
-  let done = 0, failed = 0;
-  for (const { char, journey } of targets) {
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
     try {
-      // Load that playthrough's state
-      const ptState = JSON.parse(localStorage.getItem(stateKey(char, journey)));
-
-      // Build payload using that state (temporarily swap)
-      const savedChar = currentChar, savedJourney = currentJourney, savedState = state;
-      currentChar = char; currentJourney = journey; state = ptState;
-      const payload = buildSyncPayload();
-      currentChar = savedChar; currentJourney = savedJourney; state = savedState;
-
-      const payloadB64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-      const getUrl = url + '?action=push&char=' + encodeURIComponent(char)
-        + '&journey=' + encodeURIComponent(journey)
-        + '&data=' + encodeURIComponent(payloadB64);
-
-      if (getUrl.length < 2000) {
-        const res = await fetchWithTimeout(getUrl, { method: 'GET', redirect: 'follow' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        await res.json();
-      } else {
-        const res = await fetchWithTimeout(url, {
-          method: 'POST', redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'push', payload })
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        await res.json();
+      const data = JSON.parse(e.target.result);
+      if (!data.state) { alert('Invalid file — no state found.'); return; }
+      // If the JSON has a character name, register it
+      if (data.character && !chars.includes(data.character)) {
+        chars.push(data.character);
+        saveMeta();
       }
-      done++;
-      setStatus('Pushing… ' + done + '/' + targets.length + ' complete');
-    } catch(e) {
-      failed++;
-      console.warn('Push failed for', char, journey, e.message);
+      const char    = data.character || currentChar;
+      const journey = data.journey   || currentJourney;
+      localStorage.setItem(stateKey(char, journey), JSON.stringify(data.state));
+      currentChar    = char;
+      currentJourney = journey;
+      state = data.state;
+      saveMeta();
+      buildSelectors();
+      renderAll();
+      renderSpPtList();
+      alert('Imported ' + char + ' — ' + journey + ' successfully.');
+    } catch(err) {
+      alert('Failed to parse JSON: ' + err.message);
     }
-  }
-
-  if (failed === 0) {
-    setStatus('All ' + done + ' playthroughs pushed ✓', 'ok');
-  } else {
-    setStatus(done + ' pushed, ' + failed + ' failed — check console for details', 'err');
-  }
-
+  };
+  reader.readAsText(file);
+  input.value = ''; // reset so same file can be re-uploaded
 }
 
+function saveDriveFolder() {
+  const val = document.getElementById('drive-folder-inp').value.trim() || 'Elden Ring Tracker';
+  localStorage.setItem('er_drive_folder', val);
+  setDriveStatus('Drive folder saved: ' + val + ' ✓', 'ok');
+}
+
+function setDriveStatus(msg, cls) {
+  const el = document.getElementById('drive-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sync-status ' + (cls || '');
+  if (cls === 'ok') setTimeout(function() { el.textContent = ''; el.className = 'sync-status'; }, 4000);
+}
+
+async function pullJSONFromDrive() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setDriveStatus('No Apps Script URL saved — add one in Sync section first.', 'err'); return; }
+  const folder = localStorage.getItem('er_drive_folder') || 'Elden Ring Tracker';
+  setDriveStatus('Fetching latest JSON from Drive…');
+  try {
+    const getUrl = url + '?action=getLatestJSON'
+      + '&folder=' + encodeURIComponent(folder)
+      + '&char='   + encodeURIComponent(currentChar)
+      + '&journey='+ encodeURIComponent(currentJourney);
+    const res = await fetchWithTimeout(getUrl, { method: 'GET', redirect: 'follow' }, 20000);
+    if (!res.ok) throw new Error('Server returned ' + res.status);
+    const data = await res.json();
+    if (!data.ok || !data.state) throw new Error(data.error || 'No JSON found in Drive folder.');
+    state = data.state;
+    state.general_deaths_base = data.state.general_deaths_base || 0;
+    state.general_deaths_sote = data.state.general_deaths_sote || 0;
+    saveState();
+    renderAll();
+    setDriveStatus('Pulled from Drive ✓', 'ok');
+  } catch(e) {
+    setDriveStatus('Pull failed: ' + e.message, 'err');
+  }
+}
+
+
 function exportJSON() {
+
   const blob = new Blob([JSON.stringify({character:currentChar,journey:currentJourney,state},null,2)],{type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1466,7 +1568,7 @@ function renderBosses(filter) {
             return `<tr class="${b.killed?'killed-row':''}">
               <td><div class="ck ${b.killed?'on':''}" onclick="togBoss('bosses','${rk}',${ri},this)">${b.killed?'&#10003;':''}</div></td>
               <td><div class="b-nm ${b.killed?'k':''}">${clean(b.name)}</div></td>
-              <td style="text-align:center"><input class="d-inp ${(b.attempts||0)>0?'hot':''}" type="number" min="0" value="${b.attempts||0}" onchange="setDeath('bosses','${rk}',${ri},this.value)" onclick="event.stopPropagation()"></td>
+              <td style="text-align:center"><input class="d-inp ${(b.attempts||0)>0?'hot':''}" type="number" min="0" value="${b.attempts||0}" onchange="setDeath('bosses','${rk}',${ri},this.value,this)" onclick="event.stopPropagation()"></td>
             </tr>`;
           }).join('')}</tbody>
         </table>
@@ -1542,7 +1644,7 @@ function renderSote(filter) {
             return `<tr class="${b.killed?'killed-row':''}">
               <td><div class="ck ${b.killed?'on':''}" onclick="togBoss('sote_bosses','${rk}',${ri},this)">${b.killed?'&#10003;':''}</div></td>
               <td><div class="b-nm ${b.killed?'k':''}">${b.name}</div></td>
-              <td style="text-align:center"><input class="d-inp ${(b.attempts||0)>0?'hot':''}" type="number" min="0" value="${b.attempts||0}" onchange="setDeath('sote_bosses','${rk}',${ri},this.value)" onclick="event.stopPropagation()"></td>
+              <td style="text-align:center"><input class="d-inp ${(b.attempts||0)>0?'hot':''}" type="number" min="0" value="${b.attempts||0}" onchange="setDeath('sote_bosses','${rk}',${ri},this.value,this)" onclick="event.stopPropagation()"></td>
             </tr>`;
           }).join('')}</tbody>
         </table>
@@ -1587,9 +1689,25 @@ function togBoss(col, region, idx) {
   }
   renderDash();
 }
-function setDeath(col, region, idx, val) {
-  state[col][region][idx].attempts = parseInt(val)||0;
-  saveState(); renderDash();
+function setDeath(col, region, idx, val, el) {
+  const n = parseInt(val) || 0;
+  state[col][region][idx].attempts = n;
+  // update hot class on input
+  if (el) el.classList.toggle('hot', n > 0);
+  // update region header death count + progress in-place
+  if (el) {
+    const block = el.closest('.region-block');
+    if (block) {
+      const allB = state[col][region];
+      const killed = allB.filter(b => b.killed).length;
+      const total  = allB.length;
+      const deaths = allB.reduce((s, b) => s + (b.attempts || 0), 0);
+      const meta = block.querySelector('.r-meta');
+      if (meta) meta.textContent = killed + '/' + total + ' felled · ' + deaths + ' deaths';
+    }
+  }
+  saveState();
+  renderDash();
 }
 
 /* ── ITEM SECTION BUILDER (Style C) ── */
