@@ -675,7 +675,10 @@ body{
         <input class="sync-url-inp" id="drive-folder-inp" type="text" placeholder="Elden Ring Tracker">
         <button class="sync-btn" onclick="saveDriveFolder()">Save</button>
       </div>
-      <button class="sync-btn" style="width:100%;margin-bottom:6px;" onclick="pullJSONFromDrive()">&#8681; Pull Latest JSON from Drive</button>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <button class="sync-btn" style="flex:1;" onclick="testDriveAccess()">&#10003; Test Drive Access</button>
+        <button class="sync-btn" style="flex:1;" onclick="pullJSONFromDrive()">&#8681; Pull Latest JSON from Drive</button>
+      </div>
       <div class="sync-status" id="drive-status"></div>
     </div>
 
@@ -1169,8 +1172,16 @@ async function pushToSheets() {
   setStatus('Pushing… (may take 5–10s)');
   try {
     const data = await scriptRequest('push');
-    if (data && data.ok) setStatus('Pushed to Google Sheets ✓  (' + (data.rows || '') + ' rows)', 'ok');
-    else setStatus('Push failed: ' + (data ? data.error || 'unknown' : 'no response'), 'err');
+    if (data && data.ok) {
+      if (data.driveError) {
+        setStatus('Pushed to Sheets ✓ — Drive backup failed: ' + data.driveError, 'err');
+      } else {
+        const folder = data.driveFolder ? ' + Drive (' + data.driveFolder + ')' : '';
+        setStatus('Pushed to Google Sheets ✓' + folder + '  (' + (data.rows || '') + ' rows)', 'ok');
+      }
+    } else {
+      setStatus('Push failed: ' + (data ? data.error || 'unknown' : 'no response'), 'err');
+    }
   } catch(e) { setStatus('Push failed: ' + e.message, 'err'); }
 }
 
@@ -1387,6 +1398,26 @@ function setDriveStatus(msg, cls) {
   el.textContent = msg;
   el.className = 'sync-status ' + (cls || '');
   if (cls === 'ok') setTimeout(function() { el.textContent = ''; el.className = 'sync-status'; }, 4000);
+}
+
+async function testDriveAccess() {
+  const url = localStorage.getItem('er_script_url');
+  if (!url) { setDriveStatus('No Apps Script URL saved.', 'err'); return; }
+  const folder = localStorage.getItem('er_drive_folder') || 'Elden Ring Tracker';
+  setDriveStatus('Testing Drive access…');
+  try {
+    const testUrl = url + '?action=testDrive&folder=' + encodeURIComponent(folder);
+    const res = await fetchWithTimeout(testUrl, { method: 'GET', redirect: 'follow' }, 20000);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.ok) {
+      setDriveStatus('✓ ' + data.message, 'ok');
+    } else {
+      setDriveStatus('✗ ' + data.error, 'err');
+    }
+  } catch(e) {
+    setDriveStatus('Test failed: ' + e.message, 'err');
+  }
 }
 
 async function pullJSONFromDrive() {
