@@ -2276,8 +2276,8 @@ function mStats(map) { let t=0,g=0; for(const v of Object.values(map)){t+=v.leng
 /* ── DASHBOARD ── */
 function renderDash() {
   const base = bStats(state.bosses), sote = bStats(state.sote_bosses);
-  const weap = mStats(state.weapons), sorc = iStats(state.sorceries);
-  const incan = iStats(state.incantations), spir = iStats(state.spirit_ashes);
+  const weap = mStats(state.weapons), sorc = mStats(state.sorceries_typed || {});
+  const incan = mStats(state.incantations_typed || {}), spir = iStats(state.spirit_ashes);
   const tali = iStats(state.talismans);
   const allBase = Object.values(state.bosses).flat().filter(b=>b.attempts>0).sort((a,b)=>b.attempts-a.attempts);
   const allSote = Object.values(state.sote_bosses).flat().filter(b=>b.attempts>0).sort((a,b)=>b.attempts-a.attempts);
