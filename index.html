@@ -1987,7 +1987,14 @@ async function pullFromSheets() {
   try {
     const data = await scriptRequest('pull');
     if (data && data.state) {
-      state = data.state;
+      // Merge pulled state into freshState so missing fields are always populated
+      const base = freshState();
+      state = Object.assign(base, data.state);
+      // Ensure typed fields always exist (old pulls may not have them)
+      if (!state.sorceries_typed || Object.keys(state.sorceries_typed).length === 0) state.sorceries_typed = base.sorceries_typed;
+      if (!state.incantations_typed || Object.keys(state.incantations_typed).length === 0) state.incantations_typed = base.incantations_typed;
+      if (!state.ashes_of_war || Object.keys(state.ashes_of_war).length === 0) state.ashes_of_war = base.ashes_of_war;
+      if (!state.armor || !state.armor.helms) state.armor = base.armor;
       state.general_deaths_base = data.state.general_deaths_base || 0;
       state.general_deaths_sote = data.state.general_deaths_sote || 0;
       saveState();
@@ -2104,8 +2111,14 @@ async function pullAllFromSheets() {
         const data = await res.json();
         if (!data.ok || !data.state) throw new Error(data.error || 'No state returned');
 
-        // Save to localStorage under the correct key
-        localStorage.setItem(stateKey(pt.character, pt.journey), JSON.stringify(data.state));
+        // Merge with freshState to ensure all fields present
+        const base = freshState();
+        const merged = Object.assign(base, data.state);
+        if (!merged.sorceries_typed || Object.keys(merged.sorceries_typed).length === 0) merged.sorceries_typed = base.sorceries_typed;
+        if (!merged.incantations_typed || Object.keys(merged.incantations_typed).length === 0) merged.incantations_typed = base.incantations_typed;
+        if (!merged.ashes_of_war || Object.keys(merged.ashes_of_war).length === 0) merged.ashes_of_war = base.ashes_of_war;
+        if (!merged.armor || !merged.armor.helms) merged.armor = base.armor;
+        localStorage.setItem(stateKey(pt.character, pt.journey), JSON.stringify(merged));
 
         // Register character if new
         if (!chars.includes(pt.character)) {
@@ -2229,7 +2242,12 @@ async function pullJSONFromDrive() {
     if (!res.ok) throw new Error('Server returned ' + res.status);
     const data = await res.json();
     if (!data.ok || !data.state) throw new Error(data.error || 'No JSON found in Drive folder.');
-    state = data.state;
+    const base = freshState();
+    state = Object.assign(base, data.state);
+    if (!state.sorceries_typed || Object.keys(state.sorceries_typed).length === 0) state.sorceries_typed = base.sorceries_typed;
+    if (!state.incantations_typed || Object.keys(state.incantations_typed).length === 0) state.incantations_typed = base.incantations_typed;
+    if (!state.ashes_of_war || Object.keys(state.ashes_of_war).length === 0) state.ashes_of_war = base.ashes_of_war;
+    if (!state.armor || !state.armor.helms) state.armor = base.armor;
     state.general_deaths_base = data.state.general_deaths_base || 0;
     state.general_deaths_sote = data.state.general_deaths_sote || 0;
     saveState();
