@@ -2740,6 +2740,42 @@ function showArmorSlot(slot, btn) {
 }
 function renderArmor(filter) {
   const q = (filter !== undefined ? filter : _armorFilter).toLowerCase();
+
+  // Migrate: reorder state to match RAW order, preserve collected, append extras
+  if (state.armor) {
+    let changed = false;
+    for (const slot of ['helms','chest_armor','gauntlets','legwear']) {
+      const rawItems = (RAW.armor && RAW.armor[slot]) || [];
+      if (!rawItems.length) continue;
+      if (!state.armor[slot]) {
+        state.armor[slot] = rawItems.map(i => ({name:i.name, collected:false}));
+        changed = true; continue;
+      }
+      // Build collected lookup — match by full name OR base name (strip [SOTE])
+      const collectedMap = {};
+      state.armor[slot].forEach(i => {
+        collectedMap[i.name] = i.collected;
+        collectedMap[i.name.replace(' [SOTE]','')] = i.collected;
+      });
+      // Check if reorder is needed
+      const rawNames = rawItems.map(i => i.name);
+      const stateNames = state.armor[slot].slice(0, rawNames.length).map(i => i.name);
+      const needsReorder = rawNames.some((n,i) => n !== stateNames[i]);
+      if (needsReorder) {
+        const rawNameSet = new Set(rawNames);
+        const reordered = rawItems.map(i => ({
+          name: i.name,
+          collected: collectedMap[i.name] || collectedMap[i.name.replace(' [SOTE]','')] || false
+        }));
+        // Append extras not in RAW (Brave's set, Millicent's, etc.)
+        state.armor[slot].forEach(i => { if (!rawNameSet.has(i.name)) reordered.push(i); });
+        state.armor[slot] = reordered;
+        changed = true;
+      }
+    }
+    if (changed) saveState();
+  }
+
   const el = document.getElementById('armor-body');
   if (!el || !state.armor) return;
   const rawItems = state.armor[_currentArmorSlot] || [];
@@ -2903,7 +2939,35 @@ function renderSpirits(filter) {
   const el = document.getElementById('spirits-body');
   el.innerHTML = '';
 
-  // Migrate old saves — patch missing section fields and missing [SOTE] suffixes
+  // Migrate: reorder, patch sections, add [SOTE] suffixes
+  if (state.spirit_ashes && state.spirit_ashes.length > 0) {
+    // Build lookup from state
+    const rawLookup = {};
+    RAW.spirit_ashes.forEach(s => {
+      const base = s.name.replace(' [SOTE]','');
+      rawLookup[base] = {section: s.section, sote: s.name.endsWith(' [SOTE]'), fullName: s.name};
+    });
+    // Check if reorder/migration needed
+    const stateNames = state.spirit_ashes.map(s => s.name.replace(' [SOTE]',''));
+    const rawNames = RAW.spirit_ashes.map(s => s.name.replace(' [SOTE]',''));
+    const needsReorder = rawNames.some((n,i) => n !== stateNames[i]);
+    const needsPatches = state.spirit_ashes.some(s => !s.section || (rawLookup[s.name.replace(' [SOTE]','')] && rawLookup[s.name.replace(' [SOTE]','')].sote && !s.name.endsWith(' [SOTE]')));
+    if (needsReorder || needsPatches) {
+      const collectedMap = {};
+      state.spirit_ashes.forEach(s => {
+        const base = s.name.replace(' [SOTE]','');
+        collectedMap[base] = s.collected;
+        collectedMap[s.name] = s.collected;
+      });
+      state.spirit_ashes = RAW.spirit_ashes.map(r => ({
+        name: r.name,
+        section: r.section,
+        location: '',
+        collected: collectedMap[r.name] || collectedMap[r.name.replace(' [SOTE]','')] || false
+      }));
+      saveState();
+    }
+  }
   if (state.spirit_ashes && state.spirit_ashes.length > 0) {
     // Build lookup from RAW: base name -> {section, sote}
     const rawLookup = {};
