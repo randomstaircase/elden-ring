@@ -3303,29 +3303,69 @@ function adjustLayout() {
 
 function buildSyncPayload() {
   const rows = [];
+
+  // Bosses
   for (const [r,bs] of Object.entries(state.bosses))
     for (const b of bs)
       rows.push({section:'Boss',region:r,name:clean(b.name),dlc:'No',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
   for (const [r,bs] of Object.entries(state.sote_bosses))
     for (const b of bs)
       rows.push({section:'Boss SotE',region:r,name:b.name,dlc:'Yes',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
+
+  // Weapons
   for (const [cat,ws] of Object.entries(state.weapons))
     for (const w of ws)
       rows.push({section:'Weapon',region:cat,name:w.name,dlc:isDLC(w.name)?'Yes':'No',status:w.collected?'Collected':'Not Collected',deaths:''});
-  for (const s of state.sorceries)
-    rows.push({section:'Sorcery',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
-  for (const s of state.incantations)
-    rows.push({section:'Incantation',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
-  for (const s of state.spirit_ashes)
-    rows.push({section:'Spirit Ash',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
-  for (const t of state.talismans)
+
+  // Sorceries — read from typed dict (preferred) or fall back to flat array
+  if (state.sorceries_typed && Object.keys(state.sorceries_typed).length > 0) {
+    for (const [typ, items] of Object.entries(state.sorceries_typed))
+      for (const s of items)
+        rows.push({section:'Sorcery',region:typ,name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  } else {
+    for (const s of (state.sorceries||[]))
+      rows.push({section:'Sorcery',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  }
+
+  // Incantations — read from typed dict (preferred) or fall back to flat array
+  if (state.incantations_typed && Object.keys(state.incantations_typed).length > 0) {
+    for (const [typ, items] of Object.entries(state.incantations_typed))
+      for (const s of items)
+        rows.push({section:'Incantation',region:typ,name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  } else {
+    for (const s of (state.incantations||[]))
+      rows.push({section:'Incantation',region:'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+  }
+
+  // Ashes of War
+  if (state.ashes_of_war) {
+    for (const [affinity, items] of Object.entries(state.ashes_of_war))
+      for (const a of items)
+        rows.push({section:'Ash of War',region:affinity,name:a.name,dlc:isDLC(a.name)?'Yes':'No',status:a.collected?'Collected':'Not Collected',deaths:''});
+  }
+
+  // Armor
+  if (state.armor) {
+    for (const [slot, items] of Object.entries(state.armor))
+      for (const a of items)
+        rows.push({section:'Armor',region:slot,name:a.name,dlc:isDLC(a.name)?'Yes':'No',status:a.collected?'Collected':'Not Collected',deaths:''});
+  }
+
+  // Spirit Ashes
+  for (const s of (state.spirit_ashes||[]))
+    rows.push({section:'Spirit Ash',region:s.section||'',name:s.name,dlc:isDLC(s.name)?'Yes':'No',status:s.collected?'Collected':'Not Collected',deaths:''});
+
+  // Talismans
+  for (const t of (state.talismans||[]))
     rows.push({section:'Talisman',region:'',name:t.name,dlc:isDLC(t.name)?'Yes':'No',status:t.collected?'Collected':'Not Collected',deaths:''});
+
   return {
     character: currentChar,
     journey: currentJourney,
     timestamp: new Date().toISOString(),
     general_deaths_base: state.general_deaths_base || 0,
     general_deaths_sote: state.general_deaths_sote || 0,
+    driveFolder: localStorage.getItem('er_drive_folder') || 'Elden Ring Tracker',
     rows
   };
 }
