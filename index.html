@@ -3435,7 +3435,7 @@ function migrateState() {
 
   // 1d. One-time boss rename/move migration — runs exactly once per client
   //     Wrapped in localStorage guard so it never re-runs after completion.
-  if (!localStorage.getItem('er_boss_mig_v1')) {
+  if (!localStorage.getItem('er_boss_mig_v2')) {
     function migrateBoss(col, oldRegion, oldName, newRegion, newName) {
       if (!col || !col[oldRegion]) return;
       const idx = col[oldRegion].findIndex(b => b.name === oldName);
@@ -3588,38 +3588,11 @@ function migrateState() {
     migrateBoss(state.sote_bosses, 'GRAVESITE PLAIN', 'Blackgaol Knight', 'GRAVESITE PLAIN', 'Knight of the Solitary Gaol (Western Nameless Mausoleum)');
     migrateBoss(state.sote_bosses, 'BELURAT / CASTLE ENSIS', 'Fire Knight Queelign (1st — Belurat main plaza) ^', 'SCADU ALTUS', 'Fireknight Queelign #1 (Church of the Crusade) ^');
     migrateBoss(state.sote_bosses, 'BELURAT / CASTLE ENSIS', 'Fire Knight Queelign (2nd — Belurat) ^', 'SCADU ALTUS', 'Fireknight Queelign #2 (Belurat Tower Settlement) ^');
-    localStorage.setItem('er_boss_mig_v1', '1');
+    localStorage.setItem('er_boss_mig_v2', '1');
     changed = true;
   }
 
-    // 1b2. Deduplicate any repeated boss entries within each region
-  //      (fixes saves where migrateBoss ran multiple times before the guard was added)
-  for (const col of [state.bosses, state.sote_bosses]) {
-    if (!col) continue;
-    for (const region of Object.keys(col)) {
-      const seen = new Map(); // name -> first entry index
-      const items = col[region];
-      const cleaned = [];
-      for (const b of items) {
-        if (seen.has(b.name)) {
-          // Merge into first occurrence
-          const first = cleaned[seen.get(b.name)];
-          if (b.killed) first.killed = true;
-          first.attempts = (first.attempts||0) + (b.attempts||0);
-          changed = true;
-        } else {
-          seen.set(b.name, cleaned.length);
-          cleaned.push(b);
-        }
-      }
-      if (cleaned.length !== items.length) {
-        col[region] = cleaned;
-        changed = true;
-      }
-    }
-  }
-
-  // 1c. Add any new bosses/invaders from RAW that are missing from state
+    // 1c. Add any new bosses/invaders from RAW that are missing from state
   //     (handles new regions and new entries within existing regions)
   if (state.bosses) {
     for (const [region, rawItems] of Object.entries(RAW.bosses)) {
@@ -3651,6 +3624,36 @@ function migrateState() {
           }
         }
       }
+    }
+  }
+
+  // 1b2. Deduplicate any repeated boss entries within each region
+  //      (fixes saves where migrateBoss ran multiple times before the guard was added)
+  // Build sets of valid RAW boss names for stale-entry cleanup
+  const _rawBossNames = new Set();
+  const _rawSoteNames = new Set();
+  Object.values(RAW.bosses).forEach(items => items.forEach(b => _rawBossNames.add(b.name)));
+  Object.values(RAW.sote_bosses).forEach(items => items.forEach(b => _rawSoteNames.add(b.name)));
+
+  for (const [col, validNames] of [[state.bosses, _rawBossNames], [state.sote_bosses, _rawSoteNames]]) {
+    if (!col) continue;
+    for (const region of Object.keys(col)) {
+      const seen = new Map();
+      const cleaned = [];
+      for (const b of col[region]) {
+        // Drop entries whose name no longer exists in RAW (stale from old migrations)
+        if (!validNames.has(b.name)) { changed = true; continue; }
+        if (seen.has(b.name)) {
+          const first = cleaned[seen.get(b.name)];
+          if (b.killed) first.killed = true;
+          first.attempts = (first.attempts||0) + (b.attempts||0);
+          changed = true;
+        } else {
+          seen.set(b.name, cleaned.length);
+          cleaned.push(b);
+        }
+      }
+      if (cleaned.length !== col[region].length) col[region] = cleaned;
     }
   }
 
