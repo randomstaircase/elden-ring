@@ -3634,6 +3634,11 @@ function migrateState() {
   const _rawSoteNames = new Set();
   Object.values(RAW.bosses).forEach(items => items.forEach(b => _rawBossNames.add(b.name)));
   Object.values(RAW.sote_bosses).forEach(items => items.forEach(b => _rawSoteNames.add(b.name)));
+  // Lookup by emoji-stripped name -> exact RAW name, for recovering entries
+  // that were corrupted by an old buggy sync push that stripped emoji markers
+  const _cleanToRaw = new Map();
+  Object.values(RAW.bosses).forEach(items => items.forEach(b => _cleanToRaw.set(clean(b.name), b.name)));
+  Object.values(RAW.sote_bosses).forEach(items => items.forEach(b => _cleanToRaw.set(clean(b.name), b.name)));
 
   for (const [col, validNames] of [[state.bosses, _rawBossNames], [state.sote_bosses, _rawSoteNames]]) {
     if (!col) continue;
@@ -3641,8 +3646,12 @@ function migrateState() {
       const seen = new Map();
       const cleaned = [];
       for (const b of col[region]) {
-        // Drop entries whose name no longer exists in RAW (stale from old migrations)
-        if (!validNames.has(b.name)) { changed = true; continue; }
+        if (!validNames.has(b.name)) {
+          // Try recovering via emoji-stripped match before giving up on this entry
+          const recovered = _cleanToRaw.get(clean(b.name));
+          if (recovered) { b.name = recovered; }
+          else { changed = true; continue; }
+        }
         if (seen.has(b.name)) {
           const first = cleaned[seen.get(b.name)];
           if (b.killed) first.killed = true;
@@ -3871,7 +3880,7 @@ function buildSyncPayload() {
   // Bosses
   for (const [r,bs] of Object.entries(state.bosses))
     for (const b of bs)
-      rows.push({section:'Boss',region:r,name:clean(b.name),dlc:'No',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
+      rows.push({section:'Boss',region:r,name:b.name,dlc:'No',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
   for (const [r,bs] of Object.entries(state.sote_bosses))
     for (const b of bs)
       rows.push({section:'Boss SotE',region:r,name:b.name,dlc:'Yes',status:b.killed?'Felled':'Not Felled',deaths:b.attempts||0});
