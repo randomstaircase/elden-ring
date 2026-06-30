@@ -3666,6 +3666,26 @@ function migrateState() {
     }
   }
 
+  // 1b3. Reorder each region's bosses to match RAW's exact order
+  //      (fixes saves where invaders ended up out of place from old corruption/migrations)
+  for (const [col, rawCol] of [[state.bosses, RAW.bosses], [state.sote_bosses, RAW.sote_bosses]]) {
+    if (!col) continue;
+    for (const region of Object.keys(col)) {
+      const rawOrder = (rawCol[region] || []).map(b => b.name);
+      const current = col[region];
+      const currentNames = current.map(b => b.name);
+      const sameOrder = rawOrder.length === currentNames.length && rawOrder.every((n,i) => n === currentNames[i]);
+      if (!sameOrder && rawOrder.length === currentNames.length) {
+        const byName = new Map(current.map(b => [b.name, b]));
+        const reordered = rawOrder.map(n => byName.get(n)).filter(Boolean);
+        if (reordered.length === current.length) {
+          col[region] = reordered;
+          changed = true;
+        }
+      }
+    }
+  }
+
   // 2a. One-time cleanup: merge THROWING BLADES duplicates into their proper
   //     categories, then remove the THROWING BLADES category entirely.
   if (state.weapons && state.weapons['THROWING BLADES']) {
