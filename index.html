@@ -1963,7 +1963,7 @@ const TE_SET = new Set([
   "Torrent Funereal Night [Tarnished]"  
 ]);
 
-const isTE    = n => TE_SET.has(n) || (typeof n === 'string' && n.endsWith(' [Tarnished Ed]'));
+const isTE    = n => TE_SET.has(n) || (typeof n === 'string' && n.endsWith(' [Tarnished]'));
 const teBadge = n => isTE(n) ? '<span class="te">Tarnished</span>' : '';
 const isDLC = n => !isTE(n) && (SOTE_SET.has(n) || (typeof n === 'string' && n.endsWith(' [SOTE]')));
 const dlcBadge = n => isDLC(n) ? '<span class="dlc">SotE</span>' : '';
